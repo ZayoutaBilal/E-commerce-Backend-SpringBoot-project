@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Click and Bay Sign Up</title> <link rel="stylesheet" href="../css/style.css"> </head>
+
+<body>
+<div class="container">
+    <div class="header">
+        <img src="cid:logo" alt="Click and Buy Logo" >
+    </div>
+    <h1>Welcome to Our application for buyers!</h1>
+    <p>Dear <span th:text="${var}">New User</span>,</p>
+    <p><span th:text="${message}">you are registered</span></p>
+    <p>Best regards,</p>
+    <p>The ClickAndBuy Team</p>
+
+</div>
+<div class="footer">
+    This email was sent from our ClickAndBuy system. © 2024 All rights reserved.
+</div>
+</body>
+</html>
