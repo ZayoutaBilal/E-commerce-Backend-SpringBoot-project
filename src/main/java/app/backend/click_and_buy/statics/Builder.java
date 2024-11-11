@@ -38,6 +38,7 @@ public class Builder {
         productCart.setOldPrice(cartItem.getProductVariation().getProduct().getOldPrice());
         productCart.setSize(cartItem.getProductVariation().getSize());
         productCart.setImage(image);
+        productCart.setColor(cartItem.getProductVariation().getColor());
         return productCart;
     }
 }

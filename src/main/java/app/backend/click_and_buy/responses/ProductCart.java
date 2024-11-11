@@ -16,7 +16,9 @@ public class ProductCart {
     private Double oldPrice;
     private int quantity;
     private String size;
+    private String color;
     private byte[] image;
+
 
 
 }

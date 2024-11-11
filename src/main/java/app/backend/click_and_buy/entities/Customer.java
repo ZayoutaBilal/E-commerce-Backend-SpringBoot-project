@@ -60,8 +60,8 @@ public class Customer {
 //    private User user;
 
 
-//    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL)
-//    private Cart cart;
+    @OneToOne(mappedBy = "customer",fetch = FetchType.LAZY)
+    private Cart cart;
 
     public Customer(String firstName, String lastName, String gender, String phone, LocalDate birthDay,String address,String city) {
         this.birthday=birthDay;

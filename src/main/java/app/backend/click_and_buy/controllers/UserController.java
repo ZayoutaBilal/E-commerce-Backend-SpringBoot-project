@@ -5,11 +5,8 @@ import app.backend.click_and_buy.dto.UserDetailsDTO;
 import app.backend.click_and_buy.enums.Roles;
 import app.backend.click_and_buy.massages.Error;
 import app.backend.click_and_buy.repositories.CustomerRepository;
-import app.backend.click_and_buy.request.ConfirmEmail;
-import app.backend.click_and_buy.request.UserForgetPassword;
-import app.backend.click_and_buy.request.UserLogin;
+import app.backend.click_and_buy.request.*;
 import app.backend.click_and_buy.entities.User;
-import app.backend.click_and_buy.request.UserSignup;
 import app.backend.click_and_buy.responses.SignUp;
 import app.backend.click_and_buy.security.JwtIssuer;
 import app.backend.click_and_buy.services.*;
@@ -17,6 +14,7 @@ import app.backend.click_and_buy.enums.Paths;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
+import lombok.AllArgsConstructor;
 import org.eclipse.angus.mail.util.MailConnectException;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
@@ -35,6 +33,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/user/")
 @Validated
+@AllArgsConstructor
 public class UserController {
 
     private final AuthenticationManager authenticationManager;
@@ -46,21 +45,12 @@ public class UserController {
     private final EmailConfirmationCodeService emailConfirmationCodeService;
     private final CustomerRepository customerRepository;
     private final CommonService commonService;
+    private final MessageService messageService;
 
-    public UserController(AuthenticationManager authenticationManager, MailingService mailingService, MessageSource messageSource, JwtIssuer jwtIssuer, UserService userService, PasswordVerificationCodeService passwordVerificationCodeService, EmailConfirmationCodeService emailConfirmationCodeService, CustomerRepository customerRepository, CommonService commonService) {
-        this.authenticationManager = authenticationManager;
-        this.mailingService = mailingService;
-        this.messageSource = messageSource;
-        this.jwtIssuer = jwtIssuer;
-        this.userService = userService;
-        this.passwordVerificationCodeService = passwordVerificationCodeService;
-        this.emailConfirmationCodeService = emailConfirmationCodeService;
-        this.customerRepository = customerRepository;
-        this.commonService = commonService;
-    }
+
 
     @PostMapping("signup")
-    public ResponseEntity<?> signup(@RequestBody @Valid UserSignup userSignup) throws MessagingException {
+    public ResponseEntity<String> signup(@RequestBody @Valid UserSignup userSignup) throws MessagingException {
         ResponseEntity<?> response = commonService.signup(userSignup, Roles.CUSTOMER.getRoles(),false);
         SignUp signUp = new SignUp();
         signUp.setMessage(Objects.requireNonNull(response.getBody()).toString());
@@ -72,7 +62,7 @@ public class UserController {
                 signUp.setValue(verificationCode);
             } catch (MailConnectException ignored) {}
         }
-        return ResponseEntity.status(response.getStatusCode()).body(signUp);
+        return ResponseEntity.status(response.getStatusCode()).body(Objects.requireNonNull(response.getBody()).toString());
     }
 
 
@@ -161,7 +151,7 @@ public class UserController {
             }
 
         } else {
-            return ResponseEntity.badRequest().body(messageSource.getMessage(Warning.EMAIL_NOT_EXIST,null, Locale.getDefault()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(messageSource.getMessage(Warning.EMAIL_NOT_EXIST,null, Locale.getDefault()));
         }
     }
 
@@ -192,4 +182,13 @@ public class UserController {
     public ResponseEntity<?> getMessage() {
         return ResponseEntity.badRequest().body(messageSource.getMessage(Warning.EMAIL_NOT_EXIST,null, Locale.getDefault()));
     }
+
+    @PostMapping("message/send-message")
+    public ResponseEntity<?> sendMessage(@RequestBody @Valid UserMessage message) {
+        System.out.println(message);
+        if(messageService.save(message))
+            return ResponseEntity.ok().body(messageSource.getMessage(Success.USER_MESSAGE,null, Locale.getDefault()));
+        return ResponseEntity.internalServerError().body(messageSource.getMessage(Error.USER_MESSAGE,null, Locale.getDefault()));
+    }
+
 }

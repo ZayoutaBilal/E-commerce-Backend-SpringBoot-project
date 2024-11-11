@@ -50,7 +50,8 @@ public class CommonService {
     }
 
     public ResponseEntity<?> signup(UserSignup userSignup, List<String> roles ,boolean confirmEmailStatus) {
-            String username = userSignup.getUser().getUsername();
+        System.out.println(userSignup);
+        String username = userSignup.getUser().getUsername();
             String password = userSignup.getUser().getPassword();
             String email = userSignup.getUser().getEmail();
 

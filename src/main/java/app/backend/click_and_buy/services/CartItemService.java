@@ -35,4 +35,8 @@ public class CartItemService {
         return cartItemRepository.findCartItemByCartItemId(id);
     }
 
+    public long countCartItemByCart(Cart cart){
+        return cartItemRepository.countCartItemByCart(cart);
+    }
+
 }

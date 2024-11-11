@@ -1,5 +1,6 @@
 package app.backend.click_and_buy.entities;
 
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,20 +8,31 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Entity
-@Table(name = "carts")
+@Table(name = "messages")
 @Builder
-public class Cart {
+public class Message {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "cart_id")
-    private Long CartId;
+    @Column(name = "message_id")
+    private Long messageId;
+
+    private String name;
+
+    private boolean isRead = false;
+
+    @Column(nullable = false)
+    private String email;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String message;
+
+
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -37,13 +49,4 @@ public class Cart {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", referencedColumnName = "customer_id")
-    private Customer customer;
-
-
-
-//    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
-//    private List<CartItem> cartItems;
 }

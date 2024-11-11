@@ -25,6 +25,7 @@ public class Error {
     public static String FEEDBACK_FAILED = "message.response.error.adding-feedback-failed";
     public static String UPDATING_ITEM_IN_CART_FAILED = "message.response.error.updating-item-in-cart-failed";
     public static String ADDING_PRODUCT_TO_CART_FAILED = "message.response.error.adding-product-to-cart-failed";
+    public static String USER_MESSAGE = "message.response.error.user-message";
 
 
 

@@ -118,6 +118,12 @@ public class CustomerController {
         return ResponseEntity.ok().body(productCarts);
     }
 
+    @GetMapping("/cart/get-cart-length")
+    public ResponseEntity<?> getCartLength() {
+        User user=userService.findById(commonService.getUserIdFromToken(),false);
+        return ResponseEntity.ok().body(cartItemService.countCartItemByCart(user.getCustomer().getCart()));
+    }
+
 
 
     // TEST
@@ -151,7 +157,7 @@ public class CustomerController {
 
     }
 
-    @PutMapping("cart/update-cart-item-quantity")
+    @PutMapping("cart/update-item-quantity")
     public ResponseEntity<?> updateCartItemQuantity(@RequestBody @Valid @NotNull ModifyItemQuantity modifyItemQuantity) {
         User user = userService.findById(commonService.getUserIdFromToken(), false);
         Cart cart = cartService.findCartByCustomerId(user.getCustomer().getCustomerId());

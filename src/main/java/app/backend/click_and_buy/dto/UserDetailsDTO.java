@@ -55,6 +55,7 @@ public class UserDetailsDTO implements UserDetails {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isEnabled() {
         return this.isEnabled;

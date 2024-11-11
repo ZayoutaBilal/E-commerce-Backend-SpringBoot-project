@@ -1,9 +1,11 @@
 package app.backend.click_and_buy.controllers;
+import app.backend.click_and_buy.dto.UserDTO;
 import app.backend.click_and_buy.massages.*;
 import app.backend.click_and_buy.dto.CustomerDTO;
 import app.backend.click_and_buy.entities.User;
 import app.backend.click_and_buy.massages.Error;
 import app.backend.click_and_buy.request.UserUpdatePassword;
+import app.backend.click_and_buy.responses.UserInfos;
 import app.backend.click_and_buy.services.CommonService;
 import app.backend.click_and_buy.services.CustomerService;
 import app.backend.click_and_buy.services.MailingService;
@@ -11,6 +13,8 @@ import app.backend.click_and_buy.services.UserService;
 import app.backend.click_and_buy.enums.Paths;
 import io.jsonwebtoken.io.IOException;
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,7 +28,7 @@ import java.util.Locale;
 
 @RestController
 @RequestMapping("/common/")
-@Validated
+
 public class CommonController {
 
     private final UserService userService;
@@ -42,8 +46,8 @@ public class CommonController {
         this.messageSource=messageSource;
     }
 
-    @PostMapping("update-password")
-    public ResponseEntity<?> updatePassword(@RequestBody UserUpdatePassword userUpdatePassword) {
+    @PutMapping("update-password")
+    public ResponseEntity<?> updatePassword(@RequestBody @Valid UserUpdatePassword userUpdatePassword) {
         User user=userService.findById(commonService.getUserIdFromToken(),false);
             int ret=commonService.updatePassword(user,userUpdatePassword.getOldPassword(),userUpdatePassword.getNewPassword(),false);
             if(ret==1){
@@ -62,7 +66,7 @@ public class CommonController {
     }
 
     @PostMapping("upload-picture")
-    public ResponseEntity<?> uploadPicture(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> uploadPicture(@RequestPart("file") MultipartFile file) {
         User user=userService.findById(commonService.getUserIdFromToken(),false);
         try {
             if(customerService.updateCustomerProfilePicture(user.getCustomer(),file)){
@@ -75,8 +79,8 @@ public class CommonController {
         }
     }
 
-    @PostMapping("update-user-infos")
-    public ResponseEntity<?> updateUserInfos(@RequestBody CustomerDTO customerInfos){
+    @PutMapping("update-user-infos")
+    public ResponseEntity<?> updateUserInfos(@RequestBody @Valid CustomerDTO customerInfos){
         User user=userService.findById(commonService.getUserIdFromToken(),false);
         boolean bool=customerService.updateCustomer(user.getCustomer(),customerInfos);
         if(bool){
@@ -101,7 +105,20 @@ public class CommonController {
         }else {
             return ResponseEntity.badRequest().body(messageSource.getMessage(Error.ACCOUNT_REMOVED_FAILED,null, Locale.getDefault()));
         }
-        
+
+    }
+
+    @PutMapping("update-username")
+    public ResponseEntity<?> updateUsername( @RequestParam String username){
+        System.out.println("username:"+username);
+        User user=userService.findById(commonService.getUserIdFromToken(),false);
+        if(!userService.existsByUsername(username)){
+            user.setUsername(username);
+            userService.save(user);
+            return ResponseEntity.ok().body(messageSource.getMessage(Success.USERNAME_UPDATED,null, Locale.getDefault()));
+        }else{
+            return ResponseEntity.badRequest().body(messageSource.getMessage(Warning.USERNAME_ALREADY_EXIST,null, Locale.getDefault()));
+        }
     }
 
     @PostMapping("profile-picture")
@@ -110,5 +127,28 @@ public class CommonController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_JPEG);
         return new ResponseEntity<>(image, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("get-user-infos")
+    public ResponseEntity<?> getUserInfos() {
+        User user=userService.findById(commonService.getUserIdFromToken(),false);
+        return ResponseEntity.ok().body(UserInfos.builder()
+                .firstName(user.getCustomer().getFirstName())
+                .lastName(user.getCustomer().getLastName())
+                .address(user.getCustomer().getAddress())
+                .city(user.getCustomer().getCity())
+                .phone(user.getCustomer().getPhone())
+                .email(user.getEmail())
+                .gender(user.getCustomer().getGender())
+                .birthday(user.getCustomer().getBirthday())
+                .username(user.getUsername())
+                .picture(user.getCustomer().getPicture())
+                .build()
+        );
+    }
+
+    @GetMapping("check-token")
+    public ResponseEntity<?> checkToken() {
+        return ResponseEntity.ok().body("Token is valid");
     }
 }

@@ -17,6 +17,7 @@ public class Success {
     public static String VERIFICATION_CODE_SENT = "message.response.success.verification-code-sent";
     public static String VERIFICATION_CODE_VALID = "message.response.success.verification-code-valid";
     public static String PASSWORD_UPDATED = "message.response.success.password-updated";
+    public static String USERNAME_UPDATED = "message.response.success.username-updated";
     public static String PICTURE_UPLOADED = "message.response.success.picture-uploaded";
     public static String CUSTOMER_INFOS_UPDATED = "message.response.success.customer-infos-updated";
     public static String ACCOUNT_REMOVED = "message.response.success.account-removed";
@@ -26,9 +27,7 @@ public class Success {
     public static String ITEM_QUANTITY_UPDATED = "message.response.success.item-quantity-has-been-updated";
     public static String FEEDBACK_ADDED = "message.response.success.feedback-added";
     public static String USER_SIGN_IN = "message.response.success.user-sign-in";
-//    public static String
-//    public static String
-//    public static String
-//    public static String
+    public static String USER_MESSAGE = "message.response.success.user-message";
+
 
 }
