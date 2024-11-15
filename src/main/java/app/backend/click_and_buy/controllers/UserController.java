@@ -7,6 +7,7 @@ import app.backend.click_and_buy.massages.Error;
 import app.backend.click_and_buy.repositories.CustomerRepository;
 import app.backend.click_and_buy.request.*;
 import app.backend.click_and_buy.entities.User;
+import app.backend.click_and_buy.responses.Categories;
 import app.backend.click_and_buy.responses.SignUp;
 import app.backend.click_and_buy.security.JwtIssuer;
 import app.backend.click_and_buy.services.*;
@@ -46,6 +47,7 @@ public class UserController {
     private final CustomerRepository customerRepository;
     private final CommonService commonService;
     private final MessageService messageService;
+    private final CategoryService categoryService;
 
 
 
@@ -189,6 +191,11 @@ public class UserController {
         if(messageService.save(message))
             return ResponseEntity.ok().body(messageSource.getMessage(Success.USER_MESSAGE,null, Locale.getDefault()));
         return ResponseEntity.internalServerError().body(messageSource.getMessage(Error.USER_MESSAGE,null, Locale.getDefault()));
+    }
+
+    @GetMapping("categories/get-categories")
+    public ResponseEntity<?> getCategories() {
+        return ResponseEntity.ok().body(categoryService.getCategoriesWithSubcategories());
     }
 
 }

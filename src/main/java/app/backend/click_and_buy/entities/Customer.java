@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,7 +12,8 @@ import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "customers")
 public class Customer {
@@ -62,6 +61,9 @@ public class Customer {
 
     @OneToOne(mappedBy = "customer",fetch = FetchType.LAZY)
     private Cart cart;
+
+    @OneToOne(mappedBy = "customer",fetch = FetchType.LAZY)
+    private User user;
 
     public Customer(String firstName, String lastName, String gender, String phone, LocalDate birthDay,String address,String city) {
         this.birthday=birthDay;

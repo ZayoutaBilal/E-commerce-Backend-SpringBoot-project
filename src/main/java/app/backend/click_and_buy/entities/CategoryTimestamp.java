@@ -1,13 +1,11 @@
 package app.backend.click_and_buy.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Embeddable
@@ -23,7 +21,6 @@ public class CategoryTimestamp {
 
     @Column(columnDefinition = "int default 1")
     private Integer times;
-
 
 
 }

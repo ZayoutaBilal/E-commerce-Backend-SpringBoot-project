@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -38,7 +39,7 @@ public class RatingService {
                 if (comment != null)    userRating.setComment(comment);
             }else {
                 userRating = UserRating.builder()
-                        .user(user).stars(stars == null ? 0 : stars).comment(comment).rating(rating).build();
+                        .user(user).stars(Objects.requireNonNullElse(stars,0)).comment(comment).rating(rating).build();
             }
             userRatingService.save(userRating);
             rating.updateRatingSummary();

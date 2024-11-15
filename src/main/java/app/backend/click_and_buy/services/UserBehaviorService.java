@@ -114,7 +114,7 @@ public class UserBehaviorService {
         for (UserBehavior userBehavior : userBehaviors) {
             switch (userBehavior.getActionType()) {
                 case VIEW,ADD_TO_CART -> list.addAll(getRecentProductsByUserBehavior(userBehavior.getUserBehaviorId(),limit));
-                case SEARCH -> list.addAll(getRecentCategoriesByUserBehavior(userBehavior.getUserBehaviorId(),1));
+                case SEARCH -> list.addAll(getRecentCategoriesByUserBehavior(userBehavior.getUserBehaviorId(),10));
                 default -> throw new IllegalArgumentException("Invalid details type for action: " + userBehavior.getActionType());
             }
         }

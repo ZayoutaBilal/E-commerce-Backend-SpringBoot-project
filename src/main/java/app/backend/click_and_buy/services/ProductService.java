@@ -6,20 +6,22 @@ import app.backend.click_and_buy.entities.ProductVariation;
 import app.backend.click_and_buy.repositories.CategoryRepository;
 import app.backend.click_and_buy.repositories.ProductRepository;
 import app.backend.click_and_buy.responses.ColorSizeQuantityCombination;
+import app.backend.click_and_buy.statics.ObjectValidator;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
+@AllArgsConstructor
 @Service
 public class ProductService {
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private CategoryService categoryService;
+
+    private final ProductRepository productRepository;
+    private final CategoryService categoryService;
 
 
     public Product findProductById(long id) {
@@ -31,30 +33,28 @@ public class ProductService {
     }
 
 
-    public List<Product> findByCategory(List<Category> categories) {
-        return productRepository.findByCategoryIsIn(categories);
+//    public List<Product> findByCategory(List<Category> categories) {
+//        return productRepository.findByCategoryIsIn(categories);
+//    }
+
+    public Page<Product> getLimitedProductsByCategoryIn(List<Category> category, int page ,int limit) {
+        PageRequest pageRequest = PageRequest.of(page, limit, Sort.by("productId").ascending());
+        return productRepository.findByCategoryIsIn(category, pageRequest);
     }
 
-    public List<Product> getLimitedProductsByCategory(Category category, int limit) {
-        PageRequest pageRequest = PageRequest.of(0, limit);
-        Page<Product> productPage = productRepository.findByCategory(category, pageRequest);
-        return new ArrayList<>(productPage.getContent());
-    }
-
-    public List<Product> findProductsByCategoryTree(String categoryName,String origin) {
-
-        if (origin != null && !origin.isEmpty() && !origin.isBlank() && !origin.equals("null")) {
+    public Page<Product> findProductsByCategoryTree(String categoryName,String origin,int page ,int size) {
+        Page<Product> products;
+        if (ObjectValidator.stringValidator(origin)) {
             List<Category> originCategories = categoryService.getCategoriesTree(Collections.singletonList(categoryService.getOriginCategory(origin, 0)));
             List<Category> categories = categoryService.getCategoriesTree(categoryService.getCategoryByName(categoryName));
             List<Category> intersection = new ArrayList<>(originCategories);
             intersection.retainAll(categories);
-            List<Product> products = findByCategory(intersection);
-            return new ArrayList<>(products);
+            products = getLimitedProductsByCategoryIn(intersection,page,size);
         } else {
             List<Category> categories = categoryService.getCategoriesTree(categoryService.getCategoryByName(categoryName));
-            List<Product> products = findByCategory(categories);
-            return new ArrayList<>(products);
+            products = getLimitedProductsByCategoryIn(categories,page,size);
         }
+        return products;
 
     }
 
@@ -88,12 +88,12 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    public List<Product> getProductsFromCategory(List<Category> categories, int limit) {
-        return categories.stream()
-                .flatMap(category -> getLimitedProductsByCategory(category, limit).stream())
-                .distinct()
-                .collect(Collectors.toList());
-    }
+//    public List<Product> getProductsFromCategory(List<Category> categories, int limit) {
+//        return categories.stream()
+//                .flatMap(category -> getLimitedProductsByCategory(category, limit).stream())
+//                .distinct()
+//                .collect(Collectors.toList());
+//    }
 
 
 

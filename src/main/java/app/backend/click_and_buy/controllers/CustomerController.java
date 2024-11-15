@@ -9,9 +9,11 @@ import app.backend.click_and_buy.enums.Numbers;
 import app.backend.click_and_buy.request.ModifyItemQuantity;
 import app.backend.click_and_buy.request.ProductRating;
 import app.backend.click_and_buy.request.ProductToCart;
+import app.backend.click_and_buy.request.ProductsCategory;
 import app.backend.click_and_buy.responses.ColorSizeQuantityCombination;
 import app.backend.click_and_buy.responses.ProductCart;
 import app.backend.click_and_buy.responses.ProductDetails;
+import app.backend.click_and_buy.responses.ProductOverview;
 import app.backend.click_and_buy.services.*;
 import app.backend.click_and_buy.statics.Message;
 import io.jsonwebtoken.io.IOException;
@@ -19,20 +21,22 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+
+import java.util.*;
 
 import static app.backend.click_and_buy.enums.UserActionType.*;
 import static app.backend.click_and_buy.statics.Builder.buildProductCart;
 import static app.backend.click_and_buy.statics.Builder.buildProductResponseList;
-
+@AllArgsConstructor
 @RestController()
 @RequestMapping("/customer")
 @Validated
@@ -51,19 +55,7 @@ public class CustomerController {
     private final UserBehaviorService userBehaviorService;
     private final RatingService ratingService;
 
-    public CustomerController(MessageSource messageSource, CommonService commonService, UserService userService, ProductService productService, ProductVariationService productVariationService, CartService cartService, CartItemService cartItemService, ProductImageService productImageService, CategoryService categoryService, UserBehaviorService userBehaviorService, RatingService ratingService) {
-        this.messageSource = messageSource;
-        this.commonService = commonService;
-        this.userService = userService;
-        this.productService = productService;
-        this.productVariationService = productVariationService;
-        this.cartService = cartService;
-        this.cartItemService = cartItemService;
-        this.productImageService = productImageService;
-        this.categoryService = categoryService;
-        this.userBehaviorService = userBehaviorService;
-        this.ratingService = ratingService;
-    }
+
 
     //TEST
     @PostMapping("/test")
@@ -211,12 +203,12 @@ public class CustomerController {
         }
 
         @PostMapping("products/by-category")
-        public ResponseEntity<?> showProductsByCategory(@RequestParam @NotNull @NotEmpty String categoryName,@RequestParam @NotNull String origin) {
-            List<Product> products =productService.findProductsByCategoryTree(categoryName,origin);
+        public ResponseEntity<?> showProductsByCategory(@RequestBody @Valid ProductsCategory productsCategory) {
+            Page<Product> products =productService.findProductsByCategoryTree(productsCategory.getCategoryName(),productsCategory.getOrigin(),productsCategory.getPage(),20);
             try{
                 userBehaviorService.save(
                         userService.findById(commonService.getUserIdFromToken(), false),
-                        SEARCH, categoryName
+                        SEARCH, productsCategory.getCategoryName()
                 );
             }catch(Exception ignored){}
             return new ResponseEntity<>(buildProductResponseList(products,productImageService), HttpStatus.OK);
@@ -237,31 +229,30 @@ public class CustomerController {
 
 
     @GetMapping("products/all-for-customer")
-        public ResponseEntity<?> showAllForCustomer() {
-            User user = userService.findById(commonService.getUserIdFromToken(), false);
-            List<UserBehavior> userBehaviorList=userBehaviorService.getUserBehaviorsByUser(user.getUserId());
-//            Class<?>[] actionTypes = {
-//                    UserActionType.VIEW.getDetailType(),
-//                    UserActionType.SEARCH.getDetailType(),
-//                    UserActionType.ADD_TO_CART.getDetailType()
-//            };
-//
-//            for (Class<?> actionType : actionTypes) {
-//                userBehaviorList.add(userBehaviorService.getUserBehaviorByUserAndAction(user.getUserId(), actionType));
-//            }
-            List<?> DetailsList=userBehaviorService.getDetailsFromUserBehaviorList(userBehaviorList,Numbers.NUMBER_OF_PRODUCTS_COULD_EXPORTED_FROM_DB_FOR_A_USER_BEHAVIOR.getIntValue());
-            List<Product> productList=userBehaviorService.extractDetailsByTypeFromDetailsList(DetailsList,Product.class);
-            List<Category> categoryList=productService.getCategoriesFromProductList(productList);
-            categoryList.addAll(userBehaviorService.extractDetailsByTypeFromDetailsList(DetailsList,Category.class));
-            List<Product> products=new ArrayList<>();
-            for(Category category : categoryList){
-                products.addAll(productService.getLimitedProductsByCategory(category, Numbers.PARTIAL_PRODUCT_LIST_SIZE.getIntValue()/categoryList.size()));
-            }
-            return ResponseEntity.ok().body(buildProductResponseList(products,productImageService).stream().distinct().toList());
-        }
+    public ResponseEntity<?> showAllForCustomer(@RequestParam Integer page) {
+        User user = userService.findById(commonService.getUserIdFromToken(), false);
+
+        List<UserBehavior> userBehaviorList = userBehaviorService.getUserBehaviorsByUser(user.getUserId());
+
+        List<?> detailsList = userBehaviorService.getDetailsFromUserBehaviorList(
+                userBehaviorList, Numbers.NUMBER_OF_PRODUCTS_COULD_EXPORTED_FROM_DB_FOR_A_USER_BEHAVIOR.getIntValue()
+        );
+
+        List<Product> productList = userBehaviorService.extractDetailsByTypeFromDetailsList(detailsList, Product.class);
+        List<Category> categoryList = productService.getCategoriesFromProductList(productList);
+        categoryList.addAll(userBehaviorService.extractDetailsByTypeFromDetailsList(detailsList, Category.class));
+
+        Page<Product> allProducts = productService.getLimitedProductsByCategoryIn(categoryList, page, 1);
+
+        Page<ProductOverview> productOverviewPage = buildProductResponseList(allProducts, productImageService);
+
+        return ResponseEntity.ok().body(productOverviewPage);
+    }
 
 
-        @PostMapping("products/rate-and-comment")
+
+
+    @PostMapping("products/rate-and-comment")
         public ResponseEntity<?> setRatingForProduct(@RequestBody @Valid ProductRating productRating) {
             User user = userService.findById(commonService.getUserIdFromToken(), false);
             Product product = productService.findProductById(productRating.getProductId());

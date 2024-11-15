@@ -16,6 +16,6 @@ public class ProductOverview {
     private double oldPrice;
     private double newPrice;
     private byte[] image;
-    private float stars;
+    private double stars;
 
 }

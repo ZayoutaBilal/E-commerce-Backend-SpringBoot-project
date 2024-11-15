@@ -4,11 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "categories")
 @Builder
@@ -25,9 +25,8 @@ public class Category {
     @Column(name = "category_description")
     private String description;
 
-    @Column(name = "parent_category_id",nullable = false,columnDefinition = "DEFAULT 0")
-    private Long parentCategoryId;
-
+    @Column(name = "parent_category_id")
+    private Long parentCategoryId = 0L;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

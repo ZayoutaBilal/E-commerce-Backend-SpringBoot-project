@@ -3,6 +3,7 @@ package app.backend.click_and_buy.services;
 import app.backend.click_and_buy.entities.Category;
 import app.backend.click_and_buy.entities.Product;
 import app.backend.click_and_buy.repositories.CategoryRepository;
+import app.backend.click_and_buy.responses.Categories;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +70,19 @@ public class CategoryService {
             newSize = categoryList.size();
         }
         return categoryList;
+    }
+
+    public List<Categories> getCategoriesWithSubcategories() {
+        List<Category> mainCategories = categoryRepository.findByParentCategoryId(0L);
+
+        return mainCategories.stream().map(category -> {
+            List<String> subcategoryNames = categoryRepository.findByParentCategoryId(category.getCategoryId())
+                    .stream()
+                    .map(Category::getName)
+                    .collect(Collectors.toList());
+
+            return new Categories(category.getName(), subcategoryNames);
+        }).collect(Collectors.toList());
     }
 
 }
