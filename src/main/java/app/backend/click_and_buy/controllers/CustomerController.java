@@ -174,45 +174,9 @@ public class CustomerController {
             }
         }
     }
-        @GetMapping("products/product-details")
-        public ResponseEntity<?> showProductDetails(@RequestParam @NotNull(message = "Product id must have a value") @Min(message = "Product id must be greater than or equal to 1",value = 1) Long productId) {
-            Product product = productService.findProductById(productId);
-            if(product == null){
-                return ResponseEntity.badRequest().body(messageSource.getMessage(Warning.PRODUCT_NOT_EXISTS,null, Locale.getDefault()));
-            }
-            ArrayList<ProductVariation> productVariations=productVariationService.findAllProductVariationsByProduct(product);
-            ArrayList<ProductImage> productImages=productImageService.getProductImagesByProduct(product);
-            ArrayList<ColorSizeQuantityCombination> colorSizeQuantityCombinations =productService.generateColorSizeCombinations(productVariations);
-            try{
-                userBehaviorService.save(
-                        userService.findById(commonService.getUserIdFromToken(), false),
-                        VIEW, product.getProductId()
-                );
-            }catch(Exception ignored){}
-            return new ResponseEntity<>(ProductDetails.builder()
-                    .productId(product.getProductId())
-                    .productName(product.getName())
-                    .productDescription(product.getDescription())
-                    .productPrice(product.getPrice())
-                    .productOldPrice(product.getOldPrice())
-                    .productImages(productImageService.getImagesFromProductImages(productImages))
-                    .colorSizeQuantityCombinations(colorSizeQuantityCombinations)
-                    .productCategory(categoryService.getCategoryHierarchyString(product))
-                    .build(), HttpStatus.OK);
 
-        }
 
-        @PostMapping("products/by-category")
-        public ResponseEntity<?> showProductsByCategory(@RequestBody @Valid ProductsCategory productsCategory) {
-            Page<Product> products =productService.findProductsByCategoryTree(productsCategory.getCategoryName(),productsCategory.getOrigin(),productsCategory.getPage(),20);
-            try{
-                userBehaviorService.save(
-                        userService.findById(commonService.getUserIdFromToken(), false),
-                        SEARCH, productsCategory.getCategoryName()
-                );
-            }catch(Exception ignored){}
-            return new ResponseEntity<>(buildProductResponseList(products,productImageService), HttpStatus.OK);
-        }
+
 
 
 //    @PostMapping("track-user-products-review")
@@ -242,7 +206,7 @@ public class CustomerController {
         List<Category> categoryList = productService.getCategoriesFromProductList(productList);
         categoryList.addAll(userBehaviorService.extractDetailsByTypeFromDetailsList(detailsList, Category.class));
 
-        Page<Product> allProducts = productService.getLimitedProductsByCategoryIn(categoryList, page, 1);
+        Page<Product> allProducts = productService.getLimitedProductsByCategoryIn(categoryList, page, Numbers.PARTIAL_PRODUCT_LIST_SIZE.getIntValue());
 
         Page<ProductOverview> productOverviewPage = buildProductResponseList(allProducts, productImageService);
 
@@ -254,6 +218,7 @@ public class CustomerController {
 
     @PostMapping("products/rate-and-comment")
         public ResponseEntity<?> setRatingForProduct(@RequestBody @Valid ProductRating productRating) {
+        System.out.println(productRating);
             User user = userService.findById(commonService.getUserIdFromToken(), false);
             Product product = productService.findProductById(productRating.getProductId());
             if(product == null || user == null){

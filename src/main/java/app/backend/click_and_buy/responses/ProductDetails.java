@@ -16,7 +16,10 @@ public class ProductDetails {
     private String productName;
     private String productCategory;
     private float productDiscount;
+    private double productStars;
+    private int productTotalRatings;
     private String productDescription;
+    private String productInformation;
     private double productPrice;
     private double productOldPrice;
     private ArrayList<byte[]> productImages;

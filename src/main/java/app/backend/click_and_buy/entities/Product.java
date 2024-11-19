@@ -13,7 +13,6 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@ToString
 @Table(name = "products")
 @Builder
 public class Product {
@@ -33,6 +32,9 @@ public class Product {
 
     @Column(name = "product_description",columnDefinition = "TEXT")
     private String description;
+
+    @Column(name = "product_information",columnDefinition = "TEXT")
+    private String information;
 
 
     @Column(name = "created_at")

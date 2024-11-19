@@ -4,6 +4,7 @@ import app.backend.click_and_buy.entities.Rating;
 import app.backend.click_and_buy.entities.User;
 import app.backend.click_and_buy.entities.UserRating;
 import app.backend.click_and_buy.repositories.RatingRepository;
+import app.backend.click_and_buy.statics.ObjectValidator;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,7 @@ public class RatingService {
             UserRating userRating=userRatingService.findByRatingAndUser(rating,user);
             if(userRating != null){
                 if(stars != null) userRating.setStars(stars);
-                if (comment != null)    userRating.setComment(comment);
+                if (ObjectValidator.stringValidator(comment))    userRating.setComment(comment);
             }else {
                 userRating = UserRating.builder()
                         .user(user).stars(Objects.requireNonNullElse(stars,0)).comment(comment).rating(rating).build();

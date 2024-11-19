@@ -42,6 +42,7 @@ public class Builder {
     public static ProductCart buildProductCart(CartItem cartItem, byte[] image) {
         ProductCart productCart=new ProductCart();
         productCart.setItemId(cartItem.getCartItemId());
+        productCart.setProductId(cartItem.getProductVariation().getProduct().getProductId());
         productCart.setQuantity(cartItem.getQuantity());
         productCart.setName(cartItem.getProductVariation().getProduct().getName());
         productCart.setPrice(cartItem.getProductVariation().getProduct().getPrice());

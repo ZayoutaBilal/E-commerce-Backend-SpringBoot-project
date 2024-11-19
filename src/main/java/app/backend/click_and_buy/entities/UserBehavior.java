@@ -1,6 +1,6 @@
 package app.backend.click_and_buy.entities;
 
-import app.backend.click_and_buy.enums.Numbers;
+
 import app.backend.click_and_buy.enums.UserActionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

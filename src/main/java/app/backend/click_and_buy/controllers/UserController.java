@@ -1,13 +1,16 @@
 package app.backend.click_and_buy.controllers;
 
+import app.backend.click_and_buy.entities.*;
+import app.backend.click_and_buy.enums.Numbers;
 import app.backend.click_and_buy.massages.*;
 import app.backend.click_and_buy.dto.UserDetailsDTO;
 import app.backend.click_and_buy.enums.Roles;
 import app.backend.click_and_buy.massages.Error;
 import app.backend.click_and_buy.repositories.CustomerRepository;
 import app.backend.click_and_buy.request.*;
-import app.backend.click_and_buy.entities.User;
 import app.backend.click_and_buy.responses.Categories;
+import app.backend.click_and_buy.responses.ColorSizeQuantityCombination;
+import app.backend.click_and_buy.responses.ProductDetails;
 import app.backend.click_and_buy.responses.SignUp;
 import app.backend.click_and_buy.security.JwtIssuer;
 import app.backend.click_and_buy.services.*;
@@ -15,9 +18,12 @@ import app.backend.click_and_buy.enums.Paths;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.eclipse.angus.mail.util.MailConnectException;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,8 +34,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Objects;
+
+import static app.backend.click_and_buy.enums.UserActionType.SEARCH;
+import static app.backend.click_and_buy.enums.UserActionType.VIEW;
+import static app.backend.click_and_buy.statics.Builder.buildProductResponseList;
 
 @RestController
 @RequestMapping("/user/")
@@ -48,6 +60,10 @@ public class UserController {
     private final CommonService commonService;
     private final MessageService messageService;
     private final CategoryService categoryService;
+    private final ProductImageService productImageService;
+    private final ProductService productService;
+    private final UserBehaviorService userBehaviorService;
+    private final ProductVariationService productVariationService;
 
 
 
@@ -196,6 +212,63 @@ public class UserController {
     @GetMapping("categories/get-categories")
     public ResponseEntity<?> getCategories() {
         return ResponseEntity.ok().body(categoryService.getCategoriesWithSubcategories());
+    }
+
+    @PostMapping("products/by-category")
+    public ResponseEntity<?> showProductsByCategory(@RequestBody @Valid ProductsCategory productsCategory) {
+        Page<Product> products =productService.findProductsByCategoryTree(productsCategory.getCategoryName(),productsCategory.getOrigin(),productsCategory.getPage(), Numbers.PARTIAL_PRODUCT_LIST_SIZE.getIntValue());
+        try{
+            userBehaviorService.save(
+                    userService.findById(commonService.getUserIdFromToken(), false),
+                    SEARCH, productsCategory.getCategoryName()
+            );
+        }catch(Exception ignored){}
+        return new ResponseEntity<>(buildProductResponseList(products,productImageService), HttpStatus.OK);
+    }
+
+    @GetMapping("products/product-details")
+    public ResponseEntity<?> showProductDetails(@RequestParam @NotNull(message = "Product id must have a value") @Min(message = "Product id must be greater than or equal to 1",value = 1) Long productId) {
+        Product product = productService.findProductById(productId);
+        if(product == null){
+            return ResponseEntity.badRequest().body(messageSource.getMessage(Warning.PRODUCT_NOT_EXISTS,null, Locale.getDefault()));
+        }
+        ArrayList<ProductVariation> productVariations=productVariationService.findAllProductVariationsByProduct(product);
+        ArrayList<ProductImage> productImages=productImageService.getProductImagesByProduct(product);
+        ArrayList<ColorSizeQuantityCombination> colorSizeQuantityCombinations =productService.generateColorSizeCombinations(productVariations);
+        try{
+            userBehaviorService.save(
+                    userService.findById(commonService.getUserIdFromToken(), false),
+                    VIEW, product.getProductId()
+            );
+        }catch(Exception ignored){}
+
+        Rating rating=product.getRating();
+        double productStars = rating == null ? 0.0 : rating.getAverageStars();
+        int productTotalRatings = rating == null ? 0 : rating.getTotalRatings();
+        return new ResponseEntity<>(ProductDetails.builder()
+                .productId(product.getProductId())
+                .productName(product.getName())
+                .productDescription(product.getDescription())
+                .productInformation(product.getInformation())
+                .productPrice(product.getPrice())
+                .productStars(productStars)
+                .productTotalRatings(productTotalRatings)
+                .productOldPrice(Objects.requireNonNullElse(product.getOldPrice(),0.0))
+                .productImages(productImageService.getImagesFromProductImages(productImages))
+                .colorSizeQuantityCombinations(colorSizeQuantityCombinations)
+                .productCategory(categoryService.getCategoryHierarchyString(product))
+                .build(), HttpStatus.OK);
+
+    }
+
+    @GetMapping("products/product-colors-size-quantity-combination")
+    public ResponseEntity<?> getProductColorSizeQuantityCombination(@RequestParam @NotNull(message = "Product id must have a value") @Min(message = "Product id must be greater than or equal to 1",value = 1) Long productId) {
+        Product product = productService.findProductById(productId);
+        if(product == null){
+            return ResponseEntity.badRequest().body(messageSource.getMessage(Warning.PRODUCT_NOT_EXISTS,null, Locale.getDefault()));
+        }
+        ArrayList<ProductVariation> productVariations=productVariationService.findAllProductVariationsByProduct(product);
+        return ResponseEntity.ok().body(productService.generateColorSizeCombinations(productVariations));
     }
 
 }

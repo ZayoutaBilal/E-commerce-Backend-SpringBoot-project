@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class ProductCart {
 
     private long itemId;
+    private long productId;
     private String name;
     private double price;
     private Double oldPrice;

@@ -1,5 +1,6 @@
 package app.backend.click_and_buy.request;
 
+import app.backend.click_and_buy.statics.ObjectValidator;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -21,7 +22,7 @@ public class ProductRating {
 
     @AssertTrue(message = "Either rating value or comment must be provided, and rating value must be between 1 and 5 if provided")
     private boolean isValidRating() {
-        if (getRatingValue() == null && (getComment() == null || getComment().isEmpty() || getComment().isBlank())) {
+        if (getRatingValue() == null && !ObjectValidator.stringValidator(getComment())) {
             return false;
         }
         return getRatingValue() == null || (getRatingValue() >= 1 && getRatingValue() <= 5);

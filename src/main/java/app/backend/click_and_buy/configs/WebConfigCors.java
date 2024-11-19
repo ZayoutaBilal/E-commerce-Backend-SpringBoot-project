@@ -21,6 +21,7 @@ public class WebConfigCors implements WebMvcConfigurer {
             public void addCorsMappings(CorsRegistry corsRegistry) {
                 corsRegistry.addMapping("/**")
                         .allowedOrigins("http://localhost:4200/")
+//                        .allowedOrigins("http://192.168.1.44:4200/")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
