@@ -1,16 +1,17 @@
 package app.backend.click_and_buy.services;
 
-import app.backend.click_and_buy.entities.Category;
-import app.backend.click_and_buy.entities.Product;
-import app.backend.click_and_buy.entities.ProductVariation;
+import app.backend.click_and_buy.entities.*;
 import app.backend.click_and_buy.repositories.CategoryRepository;
 import app.backend.click_and_buy.repositories.ProductRepository;
+import app.backend.click_and_buy.repositories.UserRatingRepository;
 import app.backend.click_and_buy.responses.ColorSizeQuantityCombination;
+import app.backend.click_and_buy.responses.ProductReview;
 import app.backend.click_and_buy.statics.ObjectValidator;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
+    private final UserRatingRepository userRatingRepository;
 
 
     public Product findProductById(long id) {
@@ -81,11 +83,37 @@ public class ProductService {
         return new ArrayList<>(colorSizeQuantityCombinations);
     }
 
+    public List<ProductReview> getTopReviewsForProduct(Product product) {
+        Rating rating = product.getRating();
+        if(rating == null) return null;
+        List<ProductReview> productReviews = new ArrayList<>();
+        List<UserRating> userRatings = userRatingRepository.findTop5ByRatingOrderByUpdatedAtDesc(rating);
+        for (UserRating ur : userRatings) {
+            productReviews.add(ProductReview.builder()
+                            .stars(ur.getStars())
+                            .comment(ur.getComment())
+                            .creationDate(Objects.requireNonNullElse(ur.getCreatedAt(),ur.getUpdatedAt()))
+                            .username(ur.getUser().getUsername())
+                            .image(ur.getUser().getCustomer().getPicture())
+                    .build());
+        }
+        return productReviews;
+    }
+
     public List<Category> getCategoriesFromProductList(List<Product> products) {
         return products.stream()
                 .map(Product::getCategory)
                 .distinct() // To remove duplicate products, if any
                 .collect(Collectors.toList());
+    }
+
+    public int countByCategory(Category category){
+        return productRepository.countByCategory(category);
+    }
+
+    public Page<Product> getRecentProducts(int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return productRepository.findByOrderByCreatedAtDesc(pageable);
     }
 
 //    public List<Product> getProductsFromCategory(List<Category> categories, int limit) {

@@ -20,4 +20,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByCategoryIsIn(List<Category> categories);
     List<Product> findByCategory(Category category);
     Page<Product> findByCategoryIsIn(Collection<Category> category, Pageable pageable);
+    int countByCategory(Category category);
+    Page<Product> findByOrderByCreatedAtDesc(Pageable pageable);
 }

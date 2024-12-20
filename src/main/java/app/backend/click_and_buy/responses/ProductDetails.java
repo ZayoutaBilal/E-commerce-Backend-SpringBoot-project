@@ -24,6 +24,7 @@ public class ProductDetails {
     private double productOldPrice;
     private ArrayList<byte[]> productImages;
     private ArrayList<ColorSizeQuantityCombination> colorSizeQuantityCombinations;
+    private ArrayList<ProductReview> productReviews;
 
 
 }

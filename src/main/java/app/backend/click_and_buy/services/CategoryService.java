@@ -3,7 +3,9 @@ package app.backend.click_and_buy.services;
 import app.backend.click_and_buy.entities.Category;
 import app.backend.click_and_buy.entities.Product;
 import app.backend.click_and_buy.repositories.CategoryRepository;
+import app.backend.click_and_buy.repositories.ProductRepository;
 import app.backend.click_and_buy.responses.Categories;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,10 +14,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class CategoryService {
 
-    @Autowired
+
     private CategoryRepository categoryRepository;
+    private ProductRepository productRepository;
 
     public Category getCategoryById(long id) {
         return categoryRepository.findByCategoryId(id);
@@ -75,14 +79,20 @@ public class CategoryService {
     public List<Categories> getCategoriesWithSubcategories() {
         List<Category> mainCategories = categoryRepository.findByParentCategoryId(0L);
 
-        return mainCategories.stream().map(category -> {
-            List<String> subcategoryNames = categoryRepository.findByParentCategoryId(category.getCategoryId())
-                    .stream()
+         return mainCategories.stream().map(category -> {
+            List<Category> subcategories = categoryRepository.findByParentCategoryId(category.getCategoryId());
+
+            List<String> subcategoryNames = subcategories.stream()
                     .map(Category::getName)
                     .collect(Collectors.toList());
 
-            return new Categories(category.getName(), subcategoryNames);
+            List<Integer> productsCount = subcategories.stream()
+                    .map(subcategory -> productRepository.countByCategory(subcategory))
+                    .collect(Collectors.toList());
+
+            return new Categories(category.getName(), subcategoryNames, productsCount);
         }).collect(Collectors.toList());
     }
+
 
 }

@@ -8,10 +8,7 @@ import app.backend.click_and_buy.enums.Roles;
 import app.backend.click_and_buy.massages.Error;
 import app.backend.click_and_buy.repositories.CustomerRepository;
 import app.backend.click_and_buy.request.*;
-import app.backend.click_and_buy.responses.Categories;
-import app.backend.click_and_buy.responses.ColorSizeQuantityCombination;
-import app.backend.click_and_buy.responses.ProductDetails;
-import app.backend.click_and_buy.responses.SignUp;
+import app.backend.click_and_buy.responses.*;
 import app.backend.click_and_buy.security.JwtIssuer;
 import app.backend.click_and_buy.services.*;
 import app.backend.click_and_buy.enums.Paths;
@@ -226,6 +223,13 @@ public class UserController {
         return new ResponseEntity<>(buildProductResponseList(products,productImageService), HttpStatus.OK);
     }
 
+    @GetMapping("products/recent")
+    public ResponseEntity<?> getRecentProducts() {
+        Page<Product> products =productService.getRecentProducts(12);
+        return new ResponseEntity<>(buildProductResponseList(products,productImageService), HttpStatus.OK);
+    }
+
+
     @GetMapping("products/product-details")
     public ResponseEntity<?> showProductDetails(@RequestParam @NotNull(message = "Product id must have a value") @Min(message = "Product id must be greater than or equal to 1",value = 1) Long productId) {
         Product product = productService.findProductById(productId);
@@ -235,6 +239,7 @@ public class UserController {
         ArrayList<ProductVariation> productVariations=productVariationService.findAllProductVariationsByProduct(product);
         ArrayList<ProductImage> productImages=productImageService.getProductImagesByProduct(product);
         ArrayList<ColorSizeQuantityCombination> colorSizeQuantityCombinations =productService.generateColorSizeCombinations(productVariations);
+        ArrayList<ProductReview> productReviews = (ArrayList<ProductReview>) productService.getTopReviewsForProduct(product);
         try{
             userBehaviorService.save(
                     userService.findById(commonService.getUserIdFromToken(), false),
@@ -257,6 +262,7 @@ public class UserController {
                 .productImages(productImageService.getImagesFromProductImages(productImages))
                 .colorSizeQuantityCombinations(colorSizeQuantityCombinations)
                 .productCategory(categoryService.getCategoryHierarchyString(product))
+                .productReviews(productReviews)
                 .build(), HttpStatus.OK);
 
     }

@@ -1,7 +1,8 @@
 package app.backend.click_and_buy.configs;
 
-import app.backend.click_and_buy.statics.Message;
+
 import app.backend.click_and_buy.enums.Paths;
+import app.backend.click_and_buy.statics.Constants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.thymeleaf.TemplateEngine;

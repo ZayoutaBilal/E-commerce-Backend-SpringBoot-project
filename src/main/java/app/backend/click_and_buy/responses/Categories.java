@@ -15,4 +15,5 @@ public class Categories {
 
     private String name;
     private List<String> subcategories;
+    private List<Integer> productsCount;
 }
