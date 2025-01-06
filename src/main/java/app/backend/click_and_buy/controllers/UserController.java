@@ -21,6 +21,10 @@ import lombok.AllArgsConstructor;
 import org.eclipse.angus.mail.util.MailConnectException;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,9 +36,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
 import static app.backend.click_and_buy.enums.UserActionType.SEARCH;
 import static app.backend.click_and_buy.enums.UserActionType.VIEW;
@@ -192,11 +194,6 @@ public class UserController {
 
     }
 
-    //TEST
-    @GetMapping("get-message")
-    public ResponseEntity<?> getMessage() {
-        return ResponseEntity.badRequest().body(messageSource.getMessage(Warning.EMAIL_NOT_EXIST,null, Locale.getDefault()));
-    }
 
     @PostMapping("message/send-message")
     public ResponseEntity<?> sendMessage(@RequestBody @Valid UserMessage message) {
@@ -216,16 +213,24 @@ public class UserController {
         Page<Product> products =productService.findProductsByCategoryTree(productsCategory.getCategoryName(),productsCategory.getOrigin(),productsCategory.getPage(), Numbers.PARTIAL_PRODUCT_LIST_SIZE.getIntValue());
         try{
             userBehaviorService.save(
-                    userService.findById(commonService.getUserIdFromToken(), false),
+                    userService.findById(14, false),
                     SEARCH, productsCategory.getCategoryName()
             );
-        }catch(Exception ignored){}
+        }catch(Exception exception){
+            System.out.println(exception.getMessage());
+        }
         return new ResponseEntity<>(buildProductResponseList(products,productImageService), HttpStatus.OK);
     }
 
     @GetMapping("products/recent")
     public ResponseEntity<?> getRecentProducts() {
         Page<Product> products =productService.getRecentProducts(12);
+        return new ResponseEntity<>(buildProductResponseList(products,productImageService), HttpStatus.OK);
+    }
+
+    @GetMapping("products/most-liked")
+    public ResponseEntity<?> getMostLikedProducts() {
+        Page<Product> products =productService.getMostLikedProducts(12);
         return new ResponseEntity<>(buildProductResponseList(products,productImageService), HttpStatus.OK);
     }
 
@@ -242,10 +247,14 @@ public class UserController {
         ArrayList<ProductReview> productReviews = (ArrayList<ProductReview>) productService.getTopReviewsForProduct(product);
         try{
             userBehaviorService.save(
-                    userService.findById(commonService.getUserIdFromToken(), false),
+                    userService.findById(14, false),
                     VIEW, product.getProductId()
             );
-        }catch(Exception ignored){}
+            System.out.println("it executed ");
+        }catch(Exception e){
+            System.out.println("user id = "+commonService.getUserIdFromToken());
+            System.out.println(e.getMessage());
+        }
 
         Rating rating=product.getRating();
         double productStars = rating == null ? 0.0 : rating.getAverageStars();
@@ -275,6 +284,19 @@ public class UserController {
         }
         ArrayList<ProductVariation> productVariations=productVariationService.findAllProductVariationsByProduct(product);
         return ResponseEntity.ok().body(productService.generateColorSizeCombinations(productVariations));
+    }
+
+    @GetMapping("products/new-user")
+    public ResponseEntity<?> getRecommendationsForNewUser(
+            @RequestParam(defaultValue = "0") int page) {
+
+        Page<?> recommendations = userBehaviorService.getAllRecommendationsForNewUser(page);
+        return ResponseEntity.ok(recommendations);
+    }
+    //TEST
+    @GetMapping("/test/get-id")
+    public long getTestId(){
+        return commonService.getUserIdFromToken();
     }
 
 }

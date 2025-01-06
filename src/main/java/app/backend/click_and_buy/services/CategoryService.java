@@ -36,7 +36,11 @@ public class CategoryService {
     }
 
     public List<Category> getCategoryByName(String name) {
-        return categoryRepository.findByNameContains(name);
+        System.out.println(name);
+        List<Category> cat= categoryRepository.findByNameContains(name);
+        System.out.println("Category f=> "+cat);
+        return cat;
+
     }
 
     public List<Category> getCategoryByName(List<String> name) {

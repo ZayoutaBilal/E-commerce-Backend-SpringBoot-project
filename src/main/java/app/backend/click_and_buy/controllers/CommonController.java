@@ -46,7 +46,7 @@ public class CommonController {
         this.messageSource=messageSource;
     }
 
-    @PutMapping("update-password")
+    @PutMapping("account/update-password")
     public ResponseEntity<?> updatePassword(@RequestBody @Valid UserUpdatePassword userUpdatePassword) {
         User user=userService.findById(commonService.getUserIdFromToken(),false);
             int ret=commonService.updatePassword(user,userUpdatePassword.getOldPassword(),userUpdatePassword.getNewPassword(),false);
@@ -65,7 +65,7 @@ public class CommonController {
         };
     }
 
-    @PostMapping("upload-picture")
+    @PostMapping("account/upload-picture")
     public ResponseEntity<?> uploadPicture(@RequestPart("file") MultipartFile file) {
         User user=userService.findById(commonService.getUserIdFromToken(),false);
         try {
@@ -79,7 +79,7 @@ public class CommonController {
         }
     }
 
-    @PutMapping("update-user-infos")
+    @PutMapping("account/update-user-infos")
     public ResponseEntity<?> updateUserInfos(@RequestBody @Valid CustomerDTO customerInfos){
         User user=userService.findById(commonService.getUserIdFromToken(),false);
         boolean bool=customerService.updateCustomer(user.getCustomer(),customerInfos);
@@ -91,7 +91,7 @@ public class CommonController {
     }
 
 
-    @DeleteMapping("delete-my-account")
+    @DeleteMapping("account/delete-mine")
     public ResponseEntity<?> deleteMyAccount(){
         User user=userService.findById(commonService.getUserIdFromToken(),false);
         boolean bool=userService.remove(user);
@@ -108,7 +108,7 @@ public class CommonController {
 
     }
 
-    @PutMapping("update-username")
+    @PutMapping("account/update-username")
     public ResponseEntity<?> updateUsername( @RequestParam String username){
         System.out.println("username:"+username);
         User user=userService.findById(commonService.getUserIdFromToken(),false);
@@ -121,7 +121,7 @@ public class CommonController {
         }
     }
 
-    @PostMapping("profile-picture")
+    @PostMapping("account/profile-picture")
     public ResponseEntity<byte[]> getProfilePicture() {
         byte[] image = userService.findById(commonService.getUserIdFromToken(),false).getCustomer().getPicture();
         HttpHeaders headers = new HttpHeaders();
@@ -129,7 +129,7 @@ public class CommonController {
         return new ResponseEntity<>(image, headers, HttpStatus.OK);
     }
 
-    @GetMapping("get-user-infos")
+    @GetMapping("account/get-user-infos")
     public ResponseEntity<?> getUserInfos() {
         User user=userService.findById(commonService.getUserIdFromToken(),false);
         return ResponseEntity.ok().body(UserInfos.builder()

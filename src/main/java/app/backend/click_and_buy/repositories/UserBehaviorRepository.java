@@ -2,6 +2,7 @@ package app.backend.click_and_buy.repositories;
 
 import app.backend.click_and_buy.entities.*;
 import app.backend.click_and_buy.enums.UserActionType;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -16,13 +17,11 @@ import java.util.List;
 @Repository
 public interface UserBehaviorRepository extends JpaRepository<UserBehavior, Long>, JpaSpecificationExecutor<UserBehavior> {
 
-    UserBehavior findUserBehaviorByUserBehaviorId(long userId);
-    UserBehavior findUserBehaviorByUser_UserId(long userId);
 
     UserBehavior findByUser_UserIdAndActionType(
             long userId, UserActionType actionType);
     List<UserBehavior> findByUser_UserId(long userId);
-
+    
     @Query("SELECT pt.product FROM UserBehavior ub JOIN ub.productTimestamps pt WHERE ub.userBehaviorId = :userBehaviorId ORDER BY pt.addedAt DESC")
     List<Product> findProductByUserBehaviorIdOrderByAddedAtDesc(
             @Param("userBehaviorId") long userBehaviorId,
@@ -71,11 +70,25 @@ public interface UserBehaviorRepository extends JpaRepository<UserBehavior, Long
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE user_behavior_categories SET added_at = :addedAt, times = :times WHERE user_behavior_id = :userBehaviorId AND categoryId = :categoryId", nativeQuery = true)
+    @Query(value = "UPDATE user_behavior_categories SET added_at = :addedAt, times = :times WHERE user_behavior_id = :userBehaviorId AND category_id = :categoryId", nativeQuery = true)
     void updateCategoryTimestampsBatch(@Param("userBehaviorId") Long userBehaviorId,
                                       @Param("categoryId") Long categoryId,
                                       @Param("addedAt") LocalDateTime addedAt,
                                       @Param("times") Integer times);
 
 
+    @Query("SELECT pt.product, COUNT(pt) as count " +
+            "FROM UserBehavior ub " +
+            "JOIN ub.productTimestamps pt " +
+            "WHERE ub.actionType = :actionType " +
+            "GROUP BY pt.product " +
+            "ORDER BY count DESC")
+    Page<Product> findTopProductsByAction(@Param("actionType") UserActionType actionType, Pageable pageable);
+
+    @Query("SELECT ct.category, COUNT(ct) as count " +
+            "FROM UserBehavior ub " +
+            "JOIN ub.categoryTimestamps ct " +
+            "GROUP BY ct.category " +
+            "ORDER BY count DESC")
+    Page<Category> findTopCategories(Pageable pageable);
 }

@@ -5,6 +5,7 @@ import app.backend.click_and_buy.repositories.CategoryRepository;
 import app.backend.click_and_buy.repositories.ProductRepository;
 import app.backend.click_and_buy.repositories.UserRatingRepository;
 import app.backend.click_and_buy.responses.ColorSizeQuantityCombination;
+import app.backend.click_and_buy.responses.ProductOverview;
 import app.backend.click_and_buy.responses.ProductReview;
 import app.backend.click_and_buy.statics.ObjectValidator;
 import lombok.AllArgsConstructor;
@@ -116,12 +117,13 @@ public class ProductService {
         return productRepository.findByOrderByCreatedAtDesc(pageable);
     }
 
-//    public List<Product> getProductsFromCategory(List<Category> categories, int limit) {
-//        return categories.stream()
-//                .flatMap(category -> getLimitedProductsByCategory(category, limit).stream())
-//                .distinct()
-//                .collect(Collectors.toList());
-//    }
+    public Page<Product> getMostLikedProducts(int limit) {
+        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Order.desc("rating.averageStars")));
+        return productRepository.findByRating_AverageStarsGreaterThanEqual(3.5, pageable);
+    }
+
+
+
 
 
 

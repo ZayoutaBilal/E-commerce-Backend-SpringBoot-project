@@ -86,7 +86,6 @@ public class CustomerController {
                 responseEntity = ResponseEntity.internalServerError().body(messageSource.getMessage(Error.ADDING_PRODUCT_TO_CART_FAILED,null, Locale.getDefault()));
             }
             if(responseEntity.getStatusCode() == HttpStatus.OK) {
-                System.out.println(product.getProductId());
                 userBehaviorService.save(user,ADD_TO_CART, product.getProductId());
             }
         } else {
@@ -110,7 +109,7 @@ public class CustomerController {
         return ResponseEntity.ok().body(productCarts);
     }
 
-    @GetMapping("/cart/get-cart-length")
+    @GetMapping("cart/get-cart-length")
     public ResponseEntity<?> getCartLength() {
         User user=userService.findById(commonService.getUserIdFromToken(),false);
         return ResponseEntity.ok().body(cartItemService.countCartItemByCart(user.getCustomer().getCart()));

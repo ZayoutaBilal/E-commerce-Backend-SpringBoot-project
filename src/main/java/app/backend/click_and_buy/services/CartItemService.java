@@ -3,6 +3,7 @@ package app.backend.click_and_buy.services;
 import app.backend.click_and_buy.entities.Cart;
 import app.backend.click_and_buy.entities.CartItem;
 import app.backend.click_and_buy.repositories.CartItemRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,9 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class CartItemService {
 
-    @Autowired
+
     private CartItemRepository cartItemRepository;
 
     public void saveCartItem(CartItem cartItem) {
