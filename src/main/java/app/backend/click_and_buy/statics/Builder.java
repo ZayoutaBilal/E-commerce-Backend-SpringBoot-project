@@ -23,15 +23,16 @@ public class Builder {
         List<ProductOverview> productOverviewList = productPage.getContent().stream()
                 .map(product -> {
                     ProductImage productImage = productImageService.getOneProductImageByProduct(product);
-                    return ProductOverview.builder()
+                    ProductOverview po = ProductOverview.builder()
                             .name(product.getName())
                             .id(product.getProductId())
                             .newPrice(product.getPrice())
                             .oldPrice(Objects.requireNonNullElse(product.getOldPrice(), 0.0))
-                            .image(Objects.requireNonNullElse(productImage.getImage(), new byte[0]))
                             .category(product.getCategory().getName())
                             .stars((product.getRating() != null ? product.getRating().getAverageStars() : 0.0))
                             .build();
+                    if(!Objects.isNull(productImage))    po.setImage(Objects.requireNonNullElse(productImage.getImage(), new byte[0]));
+                    return po;
                 })
                 .collect(Collectors.toList());
 

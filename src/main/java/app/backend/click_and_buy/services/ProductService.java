@@ -4,6 +4,7 @@ import app.backend.click_and_buy.entities.*;
 import app.backend.click_and_buy.repositories.CategoryRepository;
 import app.backend.click_and_buy.repositories.ProductRepository;
 import app.backend.click_and_buy.repositories.UserRatingRepository;
+import app.backend.click_and_buy.request.ProductInsertion;
 import app.backend.click_and_buy.responses.ColorSizeQuantityCombination;
 import app.backend.click_and_buy.responses.ProductOverview;
 import app.backend.click_and_buy.responses.ProductReview;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,6 +27,9 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
     private final UserRatingRepository userRatingRepository;
+    private final ProductVariationService productVariationService;
+    private final DiscountService discountService;
+    private final RatingService ratingService;
 
 
     public Product findProductById(long id) {
@@ -120,6 +125,36 @@ public class ProductService {
     public Page<Product> getMostLikedProducts(int limit) {
         Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Order.desc("rating.averageStars")));
         return productRepository.findByRating_AverageStarsGreaterThanEqual(3.5, pageable);
+    }
+
+    @Transactional
+    public long save(ProductInsertion pI) {
+        Product product = Product.builder()
+                .name(pI.getName())
+                .description(pI.getDescription())
+                .price(pI.getPrice())
+                .information(pI.getInformation())
+                .category(categoryService.getCategoryById(pI.getCategory()))
+                .build();
+
+        if(pI.getDiscount() != 0)
+            product.setDiscount(discountService.getDiscountById(pI.getDiscount()));
+
+        product = productRepository.save(product);
+
+        Rating rating = Rating.builder().build();
+        rating.setProduct(product);
+        ratingService.save(rating);
+
+        for(ProductInsertion.Variation element : pI.getVariations()){
+            ProductVariation pv = new ProductVariation();
+            pv.setColor(element.getColor());
+            pv.setQuantity(element.getQuantity());
+            pv.setSize(element.getSize());
+            pv.setProduct(product);
+            productVariationService.save(pv);
+        }
+        return product.getProductId();
     }
 
 

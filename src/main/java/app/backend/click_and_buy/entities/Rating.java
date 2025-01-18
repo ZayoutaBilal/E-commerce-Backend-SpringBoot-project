@@ -23,7 +23,7 @@ public class Rating {
     @Column(name = "rating_id")
     private Long ratingId;
 
-    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.REMOVE)
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name = "product_id")
     private Product product;
 

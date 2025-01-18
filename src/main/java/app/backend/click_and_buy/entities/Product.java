@@ -71,8 +71,18 @@ public class Product {
     @JoinColumn(name = "category_id",referencedColumnName = "category_id")
     private Category category;
 
-    @OneToOne(mappedBy = "product", fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "discount_id",referencedColumnName = "discount_id")
+    private Discount discount;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    private List<ProductVariation> productVariations;
+
+    @OneToOne(mappedBy = "product", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private Rating rating;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    private List<ProductImage> productImages;
 
 
 

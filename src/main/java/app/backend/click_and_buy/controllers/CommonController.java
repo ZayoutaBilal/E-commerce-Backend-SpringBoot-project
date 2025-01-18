@@ -15,20 +15,23 @@ import io.jsonwebtoken.io.IOException;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/common/")
-
+@AllArgsConstructor
 public class CommonController {
 
     private final UserService userService;
@@ -37,14 +40,7 @@ public class CommonController {
     private final MailingService mailingService;
     private final MessageSource messageSource;
 
-    public CommonController(UserService userService, CustomerService customerService, CommonService commonService, MailingService mailingService, MessageSource messageSource) {
 
-        this.userService = userService;
-        this.customerService = customerService;
-        this.commonService = commonService;
-        this.mailingService = mailingService;
-        this.messageSource=messageSource;
-    }
 
     @PutMapping("account/update-password")
     public ResponseEntity<?> updatePassword(@RequestBody @Valid UserUpdatePassword userUpdatePassword) {
@@ -149,6 +145,7 @@ public class CommonController {
 
     @GetMapping("check-token")
     public ResponseEntity<?> checkToken() {
-        return ResponseEntity.ok().body("Token is valid");
+        return ResponseEntity.ok().body(commonService.getAuthoritiesFromToken().stream().map(GrantedAuthority::getAuthority
+        ).toList());
     }
 }

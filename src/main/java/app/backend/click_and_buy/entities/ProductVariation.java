@@ -18,9 +18,6 @@ public class ProductVariation {
     @Column(name = "product_variation_id")
     private Long productVariationId;
 
-    @Column(nullable = false, unique = true)
-    private String sku;
-
     private String color;
 
     private String size;

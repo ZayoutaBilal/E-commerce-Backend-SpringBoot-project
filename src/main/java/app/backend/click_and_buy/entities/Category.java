@@ -34,6 +34,10 @@ public class Category {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Lob
+    @Column(columnDefinition = "LONGBLOB")
+    private byte[] image;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

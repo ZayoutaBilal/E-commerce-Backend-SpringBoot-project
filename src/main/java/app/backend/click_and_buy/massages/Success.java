@@ -28,6 +28,9 @@ public class Success {
     public static String FEEDBACK_ADDED = "message.response.success.feedback-added";
     public static String USER_SIGN_IN = "message.response.success.user-sign-in";
     public static String USER_MESSAGE = "message.response.success.user-message";
+    public static String ADD_CATEGORY = "message.response.success.add-category";
+    public static String DELETE_CATEGORY = "message.response.success.delete-category";
+    public static String UPDATE_CATEGORY = "message.response.success.update-category";
 
 
 }

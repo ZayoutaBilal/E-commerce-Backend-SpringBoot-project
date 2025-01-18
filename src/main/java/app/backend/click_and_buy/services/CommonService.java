@@ -1,7 +1,6 @@
 package app.backend.click_and_buy.services;
 
 import app.backend.click_and_buy.massages.Warning;
-import app.backend.click_and_buy.massages.Subject;
 import app.backend.click_and_buy.entities.Cart;
 import app.backend.click_and_buy.entities.Customer;
 import app.backend.click_and_buy.entities.User;
@@ -12,19 +11,19 @@ import app.backend.click_and_buy.request.UserSignup;
 import app.backend.click_and_buy.security.UserPrincipal;
 import app.backend.click_and_buy.massages.Error;
 import app.backend.click_and_buy.massages.Success;
-import app.backend.click_and_buy.statics.Message;
 import app.backend.click_and_buy.statics.ObjectValidator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -104,6 +103,15 @@ public class CommonService {
             return userPrincipal.getUserId();
         } else {
             return 0;
+        }
+    }
+
+    public Collection<? extends GrantedAuthority> getAuthoritiesFromToken() {
+        Authentication authentication=SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.getPrincipal() instanceof UserPrincipal userPrincipal) {
+            return userPrincipal.getAuthorities();
+        } else {
+            return null;
         }
     }
 

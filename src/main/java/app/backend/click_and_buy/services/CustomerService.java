@@ -4,6 +4,7 @@ import app.backend.click_and_buy.dto.CustomerDTO;
 import app.backend.click_and_buy.entities.Customer;
 import app.backend.click_and_buy.repositories.CustomerRepository;
 import app.backend.click_and_buy.statics.ObjectValidator;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -11,12 +12,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
-
+@AllArgsConstructor
 @Service
 public class CustomerService {
 
-    @Autowired
-    CustomerRepository customerRepository;
+
+    private final CustomerRepository customerRepository;
 
     public Customer save(Customer customer) throws SQLException {
         return customerRepository.save(customer);
@@ -26,7 +27,7 @@ public class CustomerService {
         return customerRepository.findByCustomerId(id);
     }
 
-    public List<Customer> findAll() throws SQLException {
+    public List<Customer> findAll() {
         return customerRepository.findAll();
     }
 

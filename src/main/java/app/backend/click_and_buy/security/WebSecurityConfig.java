@@ -40,7 +40,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
-                        .requestMatchers("/customer_service/**").hasRole("CUSTOMER_SERVICE")
+                        .requestMatchers("/customer-service/**").hasRole("CUSTOMER_SERVICE")
                         .requestMatchers("/customer/**").hasRole("CUSTOMER")
                         .requestMatchers("/common/**").hasAnyRole("CUSTOMER","CUSTOMER_SERVICE","MANAGER","ADMIN")
                        .anyRequest().authenticated()

@@ -1,16 +1,20 @@
 package app.backend.click_and_buy.services;
 
+import app.backend.click_and_buy.dto.CategoryProjection;
 import app.backend.click_and_buy.entities.Category;
 import app.backend.click_and_buy.entities.Product;
 import app.backend.click_and_buy.repositories.CategoryRepository;
 import app.backend.click_and_buy.repositories.ProductRepository;
 import app.backend.click_and_buy.responses.Categories;
+import app.backend.click_and_buy.responses.CategoryDetails;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -96,6 +100,43 @@ public class CategoryService {
 
             return new Categories(category.getName(), subcategoryNames, productsCount);
         }).collect(Collectors.toList());
+    }
+
+    public List<Category> getAllCategories() {
+        return categoryRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    public List<CategoryProjection> getAllCategories_Projection() {
+        return categoryRepository.findAllProjectedBy();
+    }
+
+    public long addCategory(CategoryDetails category) throws IOException {
+        return categoryRepository.save(Category.builder()
+                .name(category.getName())
+                .description(category.getDescription())
+                .image(category.getImage() == null ? new byte[0] : ((MultipartFile)category.getImage()).getBytes())
+                .parentCategoryId(category.getParentCategoryId())
+                .build())
+                .getCategoryId();
+    }
+
+    public void deleteCategory(long categoryId) {
+        categoryRepository.deleteById(categoryId);
+    }
+
+    public void updateCategory(CategoryDetails category){
+        Category oldCategory = categoryRepository.findByCategoryId(category.getCategoryId());
+        if(Objects.nonNull(oldCategory)){
+            oldCategory.setName(category.getName());
+            oldCategory.setDescription(category.getDescription());
+            oldCategory.setParentCategoryId(category.getParentCategoryId());
+            if(!Objects.isNull(category.getImage())) {
+                try {
+                    oldCategory.setImage(((MultipartFile)category.getImage()).getBytes());
+                } catch (IOException ignored) {}
+            }
+            categoryRepository.save(oldCategory);
+        }
     }
 
 
