@@ -2,9 +2,11 @@ package app.backend.click_and_buy.repositories;
 
 import app.backend.click_and_buy.entities.Category;
 import app.backend.click_and_buy.entities.Product;
+import io.micrometer.common.lang.NonNullApi;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -23,4 +25,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     int countByCategory(Category category);
     Page<Product> findByOrderByCreatedAtDesc(Pageable pageable);
     Page<Product> findByRating_AverageStarsGreaterThanEqual(Double minRating, Pageable pageable);
+
 }

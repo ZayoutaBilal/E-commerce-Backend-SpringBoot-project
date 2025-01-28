@@ -5,18 +5,25 @@ import app.backend.click_and_buy.dto.DiscountProjection;
 import app.backend.click_and_buy.entities.Category;
 import app.backend.click_and_buy.massages.Error;
 import app.backend.click_and_buy.massages.Success;
-import app.backend.click_and_buy.request.ProductInsertion;
+import app.backend.click_and_buy.dto.ProductManagement;
+import app.backend.click_and_buy.massages.Warning;
 import app.backend.click_and_buy.responses.CategoryDetails;
 import app.backend.click_and_buy.services.CategoryService;
 import app.backend.click_and_buy.services.DiscountService;
 import app.backend.click_and_buy.services.ProductService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
@@ -33,7 +40,7 @@ public class CustomerServiceController {
     private final DiscountService discountService;
     private final MessageSource messageSource;
 
-    @GetMapping("categories/get")
+    @GetMapping("categories")
     public ResponseEntity<?> getAllCategories() {
         List<Category> categories = categoryService.getAllCategories();
         if (categories.isEmpty()) {
@@ -44,7 +51,7 @@ public class CustomerServiceController {
         );
     }
 
-    @PostMapping("categories/add")
+    @PostMapping("categories")
     public ResponseEntity<?> addCategory(@ModelAttribute CategoryDetails category) {
         try {
             category.setCategoryId(categoryService.addCategory(category));
@@ -57,7 +64,7 @@ public class CustomerServiceController {
         }
     }
 
-    @DeleteMapping("categories/delete")
+    @DeleteMapping("categories")
     public ResponseEntity<?> deleteCategory(@RequestParam @Min(1) long categoryId) {
         try {
             categoryService.deleteCategory(categoryId);
@@ -67,7 +74,7 @@ public class CustomerServiceController {
         }
     }
 
-    @PutMapping("categories/update")
+    @PutMapping("categories")
     public ResponseEntity<?> updateCategory(@ModelAttribute CategoryDetails category){
         categoryService.updateCategory(category);
         return ResponseEntity.ok().body(messageSource.getMessage(Success.UPDATE_CATEGORY,null, Locale.getDefault()));
@@ -83,14 +90,62 @@ public class CustomerServiceController {
         return ResponseEntity.ok().body(response);
     }
 
-    @PostMapping("products/add")
-    public ResponseEntity<?> addProduct(@RequestBody ProductInsertion pI) {
+    @PostMapping("products")
+    public ResponseEntity<?> addProduct(@RequestParam("product") String product,@RequestParam("images") List<MultipartFile> images) {
         try {
-            long id = productService.save(pI);
-            return ResponseEntity.ok().body("Product with id "+id+" added successfully");
-        } catch (Exception ignored) {
-            return ResponseEntity.internalServerError().body("Error while adding product");
+            ProductManagement productManagement = new ObjectMapper().readValue(product, ProductManagement.class);
+            productService.saveNewProduct(productManagement,images);
+            return ResponseEntity.ok().body(messageSource.getMessage(Success.ADD_PRODUCT,null, Locale.getDefault()));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.internalServerError().body(messageSource.getMessage(Error.ADD_PRODUCT,null, Locale.getDefault()));
         }
     }
+
+    @GetMapping("products")
+    public ResponseEntity<?> getProducts(@RequestParam(name = "size", defaultValue = "10") int size ,
+                                         @RequestParam(name = "page", defaultValue = "0") int page ,
+                                         @RequestParam(name = "sortedBy", defaultValue = "productId") String sortedBy,
+                                         @RequestParam(name = "order", defaultValue = "asc") String order
+    )  {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(order), sortedBy));
+        return ResponseEntity.ok().body(
+                productService.getProductOverviewManagement(pageable)
+        );
+
+    }
+
+    @GetMapping("products/{productId}")
+    public ResponseEntity<?> getProduct(@PathVariable @Min(1) long productId){
+        Optional<ProductManagement> productManagement = productService.getProduct(productId);
+        return productManagement.isPresent() ? ResponseEntity.ok().body(productManagement)
+                : ResponseEntity.status(HttpStatus.NOT_FOUND).body(messageSource.getMessage(Warning.PRODUCT_NOT_EXISTS,null, Locale.getDefault()));
+    }
+
+    @DeleteMapping("products")
+    public ResponseEntity<?> deleteProduct(@RequestParam @Min(1) long productId) {
+        try {
+            productService.deleteProductById(productId);
+            return ResponseEntity.ok().body(messageSource.getMessage(Success.DELETE_PRODUCT,null, Locale.getDefault()));
+        }catch (Exception ignored) {
+            return ResponseEntity.internalServerError().body(messageSource.getMessage(Error.DELETE_PRODUCT,null, Locale.getDefault()));
+        }
+    }
+
+    @PutMapping("products")
+    public ResponseEntity<?> updateProduct(@RequestParam("productId") long productId,@RequestParam("product") String product,
+                                @RequestParam("images") List<MultipartFile> images,@RequestParam("deletedImageIds") String deletedImageIds) {
+        try {
+            ProductManagement productManagement = new ObjectMapper().readValue(product, ProductManagement.class);
+            List<?> deletedImageIdsList = new ObjectMapper().readValue(deletedImageIds, List.class);
+            return productService.updateProduct(productId,productManagement,images,deletedImageIdsList)
+                   ? ResponseEntity.ok().body(messageSource.getMessage(Success.UPDATE_PRODUCT,null, Locale.getDefault()))
+                    : ResponseEntity.status(HttpStatus.NOT_FOUND).body(messageSource.getMessage(Warning.PRODUCT_NOT_EXISTS,null, Locale.getDefault()));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.internalServerError().body(messageSource.getMessage(Error.UPDATE_PRODUCT,null, Locale.getDefault()));
+        }
+    }
+
 
 }

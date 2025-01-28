@@ -2,6 +2,7 @@ package app.backend.click_and_buy.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Cascade;
 
 
 import java.time.LocalDateTime;
@@ -75,14 +76,16 @@ public class Product {
     @JoinColumn(name = "discount_id",referencedColumnName = "discount_id")
     private Discount discount;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
     private List<ProductVariation> productVariations;
 
-    @OneToOne(mappedBy = "product", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Rating rating;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
     private List<ProductImage> productImages;
+
+
 
 
 

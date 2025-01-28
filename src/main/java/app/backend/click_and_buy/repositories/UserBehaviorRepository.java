@@ -91,4 +91,15 @@ public interface UserBehaviorRepository extends JpaRepository<UserBehavior, Long
             "GROUP BY ct.category " +
             "ORDER BY count DESC")
     Page<Category> findTopCategories(Pageable pageable);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM user_behavior_products WHERE product_id = :productId", nativeQuery = true)
+    void deleteProductTimestampBy(@Param("productId") Long productId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM user_behavior_categories WHERE category_id = :category_id", nativeQuery = true)
+    void deleteCategoryTimestampBy(@Param("category_id") Long category_id);
+
 }

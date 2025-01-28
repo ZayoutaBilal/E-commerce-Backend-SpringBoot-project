@@ -27,8 +27,11 @@ public class Error {
     public static String ADDING_PRODUCT_TO_CART_FAILED = "message.response.error.adding-product-to-cart-failed";
     public static String USER_MESSAGE = "message.response.error.user-message";
     public static String ADD_CATEGORY = "message.response.error.add-category";
+    public static String ADD_PRODUCT = "message.response.error.add-product";
     public static String DELETE_CATEGORY = "message.response.error.delete-category";
+    public static String DELETE_PRODUCT = "message.response.error.delete-product";
     public static String UPDATE_CATEGORY = "message.response.error.update-category";
+    public static String UPDATE_PRODUCT = "message.response.error.update-product";
 
 
 
