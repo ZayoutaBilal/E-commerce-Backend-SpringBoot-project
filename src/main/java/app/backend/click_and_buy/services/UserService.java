@@ -5,6 +5,7 @@ import app.backend.click_and_buy.repositories.UserRepository;
 import app.backend.click_and_buy.statics.Constants;
 import app.backend.click_and_buy.statics.ObjectValidator;
 import jakarta.persistence.EntityManager;
+import lombok.AllArgsConstructor;
 import org.hibernate.Filter;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,16 +13,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.regex.Matcher;
 
+@AllArgsConstructor
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final EntityManager entityManager;
-
-    public UserService(UserRepository userRepository, EntityManager entityManager) {
-        this.userRepository = userRepository;
-        this.entityManager = entityManager;
-    }
 
     public void save(User user) {
         userRepository.save(user);
@@ -34,6 +31,10 @@ public class UserService {
 
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
+    }
+
+    public User findByUsernameOrEmail(String target) {
+        return userRepository.findByUsernameOrEmail(target,target);
     }
 
     public User findByEmail(String email,boolean includeDeleted) {
@@ -62,14 +63,7 @@ public class UserService {
         Session session = entityManager.unwrap(Session.class);
         Filter filter = session.enableFilter("deletedUserFilter");
         filter.setParameter("isDeleted", false);
-        User user=null;
-        if(ObjectValidator.emailValidator(login)){
-            if(existsByEmail(login)) {
-                user= userRepository.findByEmail(login);
-            }else return null;
-        }else if(existsByUsername(login)){
-            user= userRepository.findByUsername(login);
-        }
+        User user = findByUsernameOrEmail(login);
         session.disableFilter("deletedUserFilter");
         return user;
     }

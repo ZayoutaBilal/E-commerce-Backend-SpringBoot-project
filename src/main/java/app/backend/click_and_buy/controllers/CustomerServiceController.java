@@ -14,6 +14,7 @@ import app.backend.click_and_buy.services.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Null;
 import lombok.AllArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.PageRequest;
@@ -145,6 +146,12 @@ public class CustomerServiceController {
             System.out.println(e.getMessage());
             return ResponseEntity.internalServerError().body(messageSource.getMessage(Error.UPDATE_PRODUCT,null, Locale.getDefault()));
         }
+    }
+
+    @GetMapping("discounts")
+    public ResponseEntity<?> getDiscounts(@RequestParam(name = "isEnded") boolean isEnded,@RequestParam(name = "all") boolean all ){
+        return all ? ResponseEntity.ok().body(discountService.getAllDiscounts())
+            : ResponseEntity.ok().body(discountService.getAllDiscountsByEndDate(isEnded));
     }
 
 

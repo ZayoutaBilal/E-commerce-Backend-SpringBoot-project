@@ -30,6 +30,12 @@ public class Discount {
     @Column(name = "discount_percent", nullable = false)
     private Float percent;
 
+    @Column(name = "start_date")
+    private LocalDateTime startDate;
+
+    @Column(name = "end_date")
+    private LocalDateTime endDate;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -46,8 +52,6 @@ public class Discount {
         updatedAt = LocalDateTime.now();
     }
 
-//    @OneToMany(mappedBy = "discount",cascade = CascadeType.ALL)
-//    private List<Order> orders;
 
 
 }

@@ -293,10 +293,6 @@ public class UserController {
         Page<?> recommendations = userBehaviorService.getAllRecommendationsForNewUser(page);
         return ResponseEntity.ok(recommendations);
     }
-    //TEST
-    @GetMapping("/test/get-id")
-    public long getTestId(){
-        return commonService.getUserIdFromToken();
-    }
+
 
 }

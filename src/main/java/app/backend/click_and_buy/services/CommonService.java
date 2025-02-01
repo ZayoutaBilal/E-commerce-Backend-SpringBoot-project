@@ -12,6 +12,8 @@ import app.backend.click_and_buy.security.UserPrincipal;
 import app.backend.click_and_buy.massages.Error;
 import app.backend.click_and_buy.massages.Success;
 import app.backend.click_and_buy.statics.ObjectValidator;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -29,56 +32,39 @@ import java.util.Locale;
 
 
 @Service
+@RequiredArgsConstructor
 public class CommonService {
 
     private final Argon2PasswordEncoder argon2PasswordEncoder= Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
     private final UserService userService;
     private final CustomerService customerService;
     private final CartService cartService;
-    private CartRepository cartRepository;
-    private UserRepository userRepository;
-    private CustomerRepository customerRepository;
+    private final ModelMapper modelMapper;
+    private final CartRepository cartRepository;
+    private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
     private final MessageSource messageSource;
 
-    public CommonService(UserService userService, CustomerService customerService, CartService cartService, MessageSource messageSource) {
-        this.userService = userService;
-        this.customerService = customerService;
-        this.cartService = cartService;
-        this.messageSource = messageSource;
-
-    }
-
+    @Transactional
     public ResponseEntity<?> signup(UserSignup userSignup, List<String> roles ,boolean confirmEmailStatus) {
-        System.out.println(userSignup);
-        String username = userSignup.getUser().getUsername();
-            String password = userSignup.getUser().getPassword();
-            String email = userSignup.getUser().getEmail();
 
-            String firstName=userSignup.getCustomer().getFirstName();
-            String lastName=userSignup.getCustomer().getLastName();
-            String gender=userSignup.getCustomer().getGender();
-            String phone=userSignup.getCustomer().getPhone();
-            LocalDate birthDay=userSignup.getCustomer().getBirthday();
-            String address=userSignup.getCustomer().getAddress();
-            String city=userSignup.getCustomer().getCity();
-
-        if(!ObjectValidator.emailValidator(email)){
+        if(!ObjectValidator.emailValidator(userSignup.getUser().getEmail())){
             return ResponseEntity.badRequest().body(messageSource.getMessage(Warning.INVALID_EMAIL,null, Locale.getDefault()));
         }
-        if(userService.existsByEmail(email)){
+        if(userService.existsByEmail(userSignup.getUser().getEmail())){
             return ResponseEntity.badRequest().body(messageSource.getMessage(Warning.EMAIL_ALREADY_EXIST,null, Locale.getDefault()));
         }
-        if(userService.existsByUsername(username)){
+        if(userService.existsByUsername(userSignup.getUser().getUsername())){
             return ResponseEntity.badRequest().body(messageSource.getMessage(Warning.USERNAME_ALREADY_EXIST,null, Locale.getDefault()));
         }
 
-        String hashedPassword=argon2PasswordEncoder.encode(password);
-        Customer customer = new Customer(firstName, lastName, gender, phone, birthDay, address, city);
+        String hashedPassword=argon2PasswordEncoder.encode(userSignup.getUser().getPassword());
+        Customer customer = modelMapper.map(userSignup.getCustomer(),Customer.class);
 
         User user = User.builder()
-            .username(username)
+            .username(userSignup.getUser().getUsername())
             .password(hashedPassword)
-            .email(email)
+            .email(userSignup.getUser().getEmail())
             .emailConfirmed(confirmEmailStatus)
             .roles(roles)
             .deleted(false)
@@ -89,7 +75,6 @@ public class CommonService {
             user.setCustomer(customer);
             userService.save(user);
             cartService.saveCart(Cart.builder().customer(customer).build());
-
             return ResponseEntity.ok().body(messageSource.getMessage(Success.USER_SIGNUP,null, Locale.getDefault()));
         } catch (SQLException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(messageSource.getMessage(Error.USER_SIGNUP_FAILED,null, Locale.getDefault()));
@@ -99,32 +84,13 @@ public class CommonService {
 
     public long getUserIdFromToken() {
         Authentication authentication=SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.getPrincipal() instanceof UserPrincipal userPrincipal) {
-            return userPrincipal.getUserId();
-        } else {
-            return 0;
-        }
+        return authentication.getPrincipal() instanceof UserPrincipal userPrincipal ? userPrincipal.getUserId() : 0;
     }
 
     public Collection<? extends GrantedAuthority> getAuthoritiesFromToken() {
         Authentication authentication=SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.getPrincipal() instanceof UserPrincipal userPrincipal) {
-            return userPrincipal.getAuthorities();
-        } else {
-            return null;
-        }
+        return authentication.getPrincipal() instanceof UserPrincipal userPrincipal ? userPrincipal.getAuthorities() : null;
     }
-
-//    public ResponseEntity<?> forgotPassword(String email) {
-//        User user = userService.findByEmail(email);
-//        if(user != null){
-//            user.setVerificationCode(VerificationCodeGenerator.generateVerificationCode());
-//            userService.save(user);
-//            return ResponseEntity.ok().body(messageResponseSuccess.getVERIFICATION_CODE_SENT_SUCCESSFUL_RESPONSE());
-//        }else{
-//            return ResponseEntity.badRequest().body(messageResponseWarning.getEMAIL_NOT_EXIST_RESPONSE());
-//        }
-//    }
 
     public int updatePassword(User user,String oldPassword, String newPassword ,boolean forForgetPassword) {
         try{
@@ -138,11 +104,9 @@ public class CommonService {
                     user.setPassword(hashedPassword);
                     userService.save(user);
                     return 1;
-                }else {
-                    return 0;
-                }
+                } return 0;
             }
-        }catch (Exception e){
+        }catch (Exception ignored){
             return -1;
         }
 
