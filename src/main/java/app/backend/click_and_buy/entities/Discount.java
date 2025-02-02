@@ -6,7 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 
 
 @NoArgsConstructor
@@ -31,10 +34,10 @@ public class Discount {
     private Float percent;
 
     @Column(name = "start_date")
-    private LocalDateTime startDate;
+    private LocalDate startDate;
 
     @Column(name = "end_date")
-    private LocalDateTime endDate;
+    private LocalDate endDate;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -51,6 +54,12 @@ public class Discount {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    @OneToMany(mappedBy = "discount", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Product> products;
+
+
+
 
 
 

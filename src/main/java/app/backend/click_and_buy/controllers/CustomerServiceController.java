@@ -3,10 +3,13 @@ package app.backend.click_and_buy.controllers;
 import app.backend.click_and_buy.dto.CategoryProjection;
 import app.backend.click_and_buy.dto.DiscountProjection;
 import app.backend.click_and_buy.entities.Category;
+import app.backend.click_and_buy.groups.CreateDiscount;
+import app.backend.click_and_buy.groups.UpdateDiscount;
 import app.backend.click_and_buy.massages.Error;
 import app.backend.click_and_buy.massages.Success;
 import app.backend.click_and_buy.dto.ProductManagement;
 import app.backend.click_and_buy.massages.Warning;
+import app.backend.click_and_buy.request.DiscountRequest;
 import app.backend.click_and_buy.responses.CategoryDetails;
 import app.backend.click_and_buy.services.CategoryService;
 import app.backend.click_and_buy.services.DiscountService;
@@ -14,7 +17,6 @@ import app.backend.click_and_buy.services.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Null;
 import lombok.AllArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.PageRequest;
@@ -153,6 +155,39 @@ public class CustomerServiceController {
         return all ? ResponseEntity.ok().body(discountService.getAllDiscounts())
             : ResponseEntity.ok().body(discountService.getAllDiscountsByEndDate(isEnded));
     }
+
+    @PostMapping("discounts")
+    public ResponseEntity<?> addDiscount(@RequestBody @Validated(CreateDiscount.class) DiscountRequest discountRequest){
+        try{
+            Map<String,Object> response = new HashMap<>();
+            response.put("message",messageSource.getMessage(Success.ADD_DISCOUNT,null, Locale.getDefault()));
+            response.put("resource",discountService.saveDiscount(discountRequest));
+            return ResponseEntity.ok().body(response);
+        }catch (Exception ignored){
+            return ResponseEntity.internalServerError().body(messageSource.getMessage(Error.ADD_DISCOUNT,null, Locale.getDefault()));
+        }
+    }
+
+    @PutMapping("discounts")
+    public ResponseEntity<?> updateDiscount(@RequestBody @Validated(UpdateDiscount.class) DiscountRequest discountRequest){
+        try{
+            discountService.updateDiscount(discountRequest);
+            return ResponseEntity.ok().body(messageSource.getMessage(Success.UPDATE_DISCOUNT,null, Locale.getDefault()));
+        }catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(messageSource.getMessage(Warning.DISCOUNT_NOT_EXISTS,null, Locale.getDefault()));
+        }
+    }
+
+    @DeleteMapping("discounts")
+    public ResponseEntity<?> deleteDiscount(@RequestParam @Min(1) long discountId) {
+        try {
+            discountService.deleteDiscount(discountId);
+            return ResponseEntity.ok().body(messageSource.getMessage(Success.DELETE_DISCOUNT,null, Locale.getDefault()));
+        }catch (Exception ignored) {
+            return ResponseEntity.internalServerError().body(messageSource.getMessage(Error.DELETE_DISCOUNT,null, Locale.getDefault()));
+        }
+    }
+
 
 
 }

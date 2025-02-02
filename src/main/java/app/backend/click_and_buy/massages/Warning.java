@@ -1,9 +1,5 @@
 package app.backend.click_and_buy.massages;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 //@Getter
 //@Setter
 //@Configuration
@@ -24,5 +20,6 @@ public class Warning {
     public static String ITEM_QUANTITY_NOT_EXISTS = "message.response.warn.quantity-not-available";
     public static String FEEDBACK_CANNOT_BE_ADDED = "message.response.warn.feedback-cannot-be-added";
 
+    public static String DISCOUNT_NOT_EXISTS = "message.response.warn.discount-not-exists";
 
 }

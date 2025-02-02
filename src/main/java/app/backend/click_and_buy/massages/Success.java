@@ -29,11 +29,15 @@ public class Success {
     public static String USER_SIGN_IN = "message.response.success.user-sign-in";
     public static String USER_MESSAGE = "message.response.success.user-message";
     public static String ADD_CATEGORY = "message.response.success.add-category";
-    public static String ADD_PRODUCT= "message.response.success.add-product";
     public static String DELETE_CATEGORY = "message.response.success.delete-category";
-    public static String DELETE_PRODUCT = "message.response.success.delete-product";
     public static String UPDATE_CATEGORY = "message.response.success.update-category";
     public static String UPDATE_PRODUCT = "message.response.success.update-product";
+    public static String DELETE_PRODUCT = "message.response.success.delete-product";
+    public static String ADD_PRODUCT= "message.response.success.add-product";
+    public static String UPDATE_DISCOUNT = "message.response.success.update-discount";
+    public static String DELETE_DISCOUNT = "message.response.success.delete-discount";
+    public static String ADD_DISCOUNT = "message.response.success.add-discount";
+
 
 
 }

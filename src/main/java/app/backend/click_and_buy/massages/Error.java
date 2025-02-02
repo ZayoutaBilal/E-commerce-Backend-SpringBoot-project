@@ -33,6 +33,11 @@ public class Error {
     public static String UPDATE_CATEGORY = "message.response.error.update-category";
     public static String UPDATE_PRODUCT = "message.response.error.update-product";
 
+    public static String UPDATE_DISCOUNT = "message.response.error.update-discount";
+    public static String DELETE_DISCOUNT = "message.response.error.delete-discount";
+    public static String ADD_DISCOUNT = "message.response.error.add-discount";
+
+
 
 
 }

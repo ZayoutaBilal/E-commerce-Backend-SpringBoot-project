@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -16,7 +17,7 @@ public class DiscountOverview {
     private String name;
     private String description;
     private Float percent;
-    private LocalDateTime endDate;
-    private LocalDateTime startDate;
+    private LocalDate endDate;
+    private LocalDate startDate;
     private LocalDateTime createdAt;
 }
