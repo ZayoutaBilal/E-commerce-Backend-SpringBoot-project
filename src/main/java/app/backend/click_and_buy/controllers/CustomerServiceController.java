@@ -7,14 +7,15 @@ import app.backend.click_and_buy.groups.CreateDiscount;
 import app.backend.click_and_buy.groups.UpdateDiscount;
 import app.backend.click_and_buy.massages.Error;
 import app.backend.click_and_buy.massages.Success;
-import app.backend.click_and_buy.dto.ProductManagement;
+import app.backend.click_and_buy.request.CreateProduct;
 import app.backend.click_and_buy.massages.Warning;
 import app.backend.click_and_buy.request.DiscountRequest;
+import app.backend.click_and_buy.request.UpdateProduct;
 import app.backend.click_and_buy.responses.CategoryDetails;
+import app.backend.click_and_buy.responses.GetProduct;
 import app.backend.click_and_buy.services.CategoryService;
 import app.backend.click_and_buy.services.DiscountService;
 import app.backend.click_and_buy.services.ProductService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
@@ -94,10 +95,10 @@ public class CustomerServiceController {
     }
 
     @PostMapping("products")
-    public ResponseEntity<?> addProduct(@RequestParam("product") String product,@RequestParam("images") List<MultipartFile> images) {
+    public ResponseEntity<?> addProduct(@RequestPart("createProduct") CreateProduct createProduct,
+                                        @RequestPart("files") List<MultipartFile> files) {
         try {
-            ProductManagement productManagement = new ObjectMapper().readValue(product, ProductManagement.class);
-            productService.saveNewProduct(productManagement,images);
+            productService.saveNewProduct(createProduct,files);
             return ResponseEntity.ok().body(messageSource.getMessage(Success.ADD_PRODUCT,null, Locale.getDefault()));
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -120,8 +121,8 @@ public class CustomerServiceController {
 
     @GetMapping("products/{productId}")
     public ResponseEntity<?> getProduct(@PathVariable @Min(1) long productId){
-        Optional<ProductManagement> productManagement = productService.getProduct(productId);
-        return productManagement.isPresent() ? ResponseEntity.ok().body(productManagement)
+        Optional<GetProduct> product = productService.getProduct(productId);
+        return product.isPresent() ? ResponseEntity.ok().body(product)
                 : ResponseEntity.status(HttpStatus.NOT_FOUND).body(messageSource.getMessage(Warning.PRODUCT_NOT_EXISTS,null, Locale.getDefault()));
     }
 
@@ -136,12 +137,10 @@ public class CustomerServiceController {
     }
 
     @PutMapping("products")
-    public ResponseEntity<?> updateProduct(@RequestParam("productId") long productId,@RequestParam("product") String product,
-                                @RequestParam("images") List<MultipartFile> images,@RequestParam("deletedImageIds") String deletedImageIds) {
+    public ResponseEntity<?> updateProduct(@RequestPart("updateProduct") UpdateProduct updateProduct,
+                                           @RequestPart("files") List<MultipartFile> files) {
         try {
-            ProductManagement productManagement = new ObjectMapper().readValue(product, ProductManagement.class);
-            List<?> deletedImageIdsList = new ObjectMapper().readValue(deletedImageIds, List.class);
-            return productService.updateProduct(productId,productManagement,images,deletedImageIdsList)
+            return productService.updateProduct(updateProduct,files)
                    ? ResponseEntity.ok().body(messageSource.getMessage(Success.UPDATE_PRODUCT,null, Locale.getDefault()))
                     : ResponseEntity.status(HttpStatus.NOT_FOUND).body(messageSource.getMessage(Warning.PRODUCT_NOT_EXISTS,null, Locale.getDefault()));
         } catch (Exception e) {

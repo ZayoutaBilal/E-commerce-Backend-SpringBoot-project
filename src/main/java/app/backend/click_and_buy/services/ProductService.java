@@ -4,8 +4,10 @@ import app.backend.click_and_buy.entities.*;
 import app.backend.click_and_buy.repositories.ProductRepository;
 import app.backend.click_and_buy.repositories.UserBehaviorRepository;
 import app.backend.click_and_buy.repositories.UserRatingRepository;
-import app.backend.click_and_buy.dto.ProductManagement;
+import app.backend.click_and_buy.request.CreateProduct;
+import app.backend.click_and_buy.request.UpdateProduct;
 import app.backend.click_and_buy.responses.ColorSizeQuantityCombination;
+import app.backend.click_and_buy.responses.GetProduct;
 import app.backend.click_and_buy.responses.ProductOverviewManagement;
 import app.backend.click_and_buy.responses.ProductReview;
 import app.backend.click_and_buy.statics.ObjectValidator;
@@ -19,9 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.modelmapper.ModelMapper;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+
 @AllArgsConstructor
 @Service
 @Transactional
@@ -134,25 +136,25 @@ public class ProductService {
     }
 
     @Transactional
-    public void saveNewProduct(ProductManagement pI, List<MultipartFile> images) {
+    public void saveNewProduct(CreateProduct createProduct,List<MultipartFile> files) {
         final Product product = Product.builder()
-                .name(pI.getName())
-                .description(pI.getDescription())
-                .price(pI.getPrice())
-                .information(pI.getInformation())
-                .category(categoryService.getCategoryById(pI.getCategory()))
+                .name(createProduct.getName())
+                .description(createProduct.getDescription())
+                .price(createProduct.getPrice())
+                .information(createProduct.getInformation())
+                .category(categoryService.getCategoryById(createProduct.getCategory()))
                 .build();
 
-        if(pI.getDiscount() != 0)
-            product.setDiscount(discountService.getDiscountById(pI.getDiscount()));
+        if(createProduct.getDiscount() != 0)
+            product.setDiscount(discountService.getDiscountById(createProduct.getDiscount()));
 
         Rating rating = Rating.builder().build();
         rating.setProduct(product);
 
         productRepository.save(product);
         ratingService.save(rating);
-        productVariationService.addVariationsToProduct(pI.getVariations(),product);
-        productImageService.addImagesToProduct(images,product);
+        productVariationService.addVariationsToProduct(createProduct.getVariations(),product);
+        productImageService.addImagesToProduct(files,product);
     }
 
     public Page<ProductOverviewManagement> getProductOverviewManagement(Pageable pageable) {
@@ -170,46 +172,47 @@ public class ProductService {
         });
     }
 
-    public Optional<ProductManagement> getProduct(long productId){
+    public Optional<GetProduct> getProduct(long productId){
         Product product = findProductById(productId);
         if(Objects.isNull(product))
             return Optional.empty();
-        ProductManagement productManagement = modelMapper.map(product,ProductManagement.class);
-        productManagement.setDiscount(
+        GetProduct getProduct = modelMapper.map(product, GetProduct.class);
+        getProduct.setDiscount(
                 Objects.isNull(product.getDiscount()) ? 0 : product.getDiscount().getDiscountId()
         );
-        productManagement.setCategory(product.getCategory().getCategoryId());
+        getProduct.setCategory(product.getCategory().getCategoryId());
         if (!product.getProductImages().isEmpty())
-            productManagement.setImages(
-                    product.getProductImages().stream().map(productImage -> ProductManagement.Image.builder().id(productImage.getProductImageId())
+            getProduct.setImages(
+                    product.getProductImages().stream().map(productImage -> GetProduct.Image.builder().id(productImage.getProductImageId())
                             .url(productImage.getImage())
-                            .build()).collect(Collectors.toList())
+                            .build()).toList()
             );
-        productManagement.setVariations(
-                product.getProductVariations().stream().map(pv -> modelMapper.map(pv,ProductManagement.Variation.class)).collect(Collectors.toList()));
-        return Optional.of(productManagement);
+        getProduct.setVariations(
+                product.getProductVariations().stream().map(pv -> modelMapper.map(pv, GetProduct.Variation.class)).toList());
+        return Optional.of(getProduct);
     }
 
-    public boolean updateProduct(long productId,ProductManagement productManagement, List<MultipartFile> images,List<?> deletedImageIds){
-        Product product = findProductById(productId);
+
+    public boolean updateProduct(UpdateProduct updateProduct, List<MultipartFile> images){
+        Product product = findProductById(updateProduct.getProductId());
         if(!Objects.isNull(product)){
-            product.setCategory(categoryService.getCategoryById(productManagement.getCategory()));
-            product.setDiscount(discountService.getDiscountById(productManagement.getDiscount()));
-            product.setName(productManagement.getName());
-            product.setInformation(productManagement.getInformation());
-            product.setDescription(productManagement.getDescription());
-            product.setPrice(productManagement.getPrice());
+            product.setCategory(categoryService.getCategoryById(updateProduct.getCategory()));
+            product.setDiscount(discountService.getDiscountById(updateProduct.getDiscount()));
+            product.setName(updateProduct.getName());
+            product.setInformation(updateProduct.getInformation());
+            product.setDescription(updateProduct.getDescription());
+            product.setPrice(updateProduct.getPrice());
             if(!images.isEmpty()){
                 productImageService.addImagesToProduct(images,product);
             }
-            System.out.println("from product service"+deletedImageIds.toString());
             productImageService.deleteAll(
                     product.getProductImages().stream()
-                            .filter(image -> deletedImageIds.contains(image.getProductImageId()))
+                            .filter(image -> updateProduct.getDeletedImages().contains(image.getProductImageId()))
                             .toList()
             );
-            product.getProductVariations().clear();
-            productVariationService.addVariationsToProduct(productManagement.getVariations(),product);
+            productVariationService.deleteAllByVariationId(updateProduct.getDeletedVariations());
+            productVariationService.addVariationsToProduct(updateProduct.getVariations(),product);
+            productVariationService.updateProductVariationQuantity(updateProduct.getUpdatedVariations());
             productRepository.save(product);
             return true;
         }

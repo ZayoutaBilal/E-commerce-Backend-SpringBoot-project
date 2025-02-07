@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DialectOverride;
+import org.hibernate.annotations.Where;
+import org.springframework.data.jpa.repository.Query;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,6 +16,7 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "product_variations")
+@Where(clause = "deleted = false")
 public class ProductVariation {
 
     @Id
@@ -24,6 +29,9 @@ public class ProductVariation {
     private String size;
 
     private Integer quantity;
+
+    @Column(columnDefinition = "DEFAULT false")
+    private boolean deleted ;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

@@ -1,19 +1,15 @@
-package app.backend.click_and_buy.dto;
+package app.backend.click_and_buy.request;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductManagement {
+public class CreateProduct {
 
-
-    private Long productId;
     private String name;
     private Double price;
     private Double oldPrice;
@@ -22,7 +18,6 @@ public class ProductManagement {
     private Long category;
     private Long discount;
     private List<Variation> variations;
-    private List<Image> images;
 
 
     @Data
@@ -32,15 +27,6 @@ public class ProductManagement {
         private String size;
         private String color;
         private int quantity;
-    }
-
-    @Builder
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Image {
-        private byte[] url;
-        private long id;
     }
 
 }

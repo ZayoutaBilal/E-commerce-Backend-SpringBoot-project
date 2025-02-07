@@ -61,7 +61,6 @@ public class ProductImageService {
     }
 
     public void deleteAll(List<ProductImage> productImages){
-        System.out.println("from image service"+productImages.toString());
         productImageRepository.deleteAll(productImages);
     }
 

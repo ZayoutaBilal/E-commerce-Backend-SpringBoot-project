@@ -1,11 +1,11 @@
 package app.backend.click_and_buy.services;
 
-import app.backend.click_and_buy.dto.ProductManagement;
+import app.backend.click_and_buy.request.CreateProduct;
 import app.backend.click_and_buy.entities.Product;
 import app.backend.click_and_buy.entities.ProductVariation;
 import app.backend.click_and_buy.repositories.ProductVariationRepository;
+import app.backend.click_and_buy.request.UpdateProduct;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,8 +25,17 @@ public class ProductVariationService {
         return productVariationRepository.findByProductVariationId(id);
     }
 
+    public List<ProductVariation> findProductVariationsById(List<Long> ids) {
+        return productVariationRepository.findAllById(ids);
+
+    }
+
     public void updateProductVariation(ProductVariation productVariation) {
         productVariationRepository.save(productVariation);
+    }
+
+    public void updateAllProductVariation(List<ProductVariation> productVariations) {
+        productVariationRepository.saveAll(productVariations);
     }
 
     public ArrayList<ProductVariation> findAllProductVariationsByProduct(Product product) {
@@ -37,7 +46,7 @@ public class ProductVariationService {
         productVariationRepository.saveAll(productVariation);
     }
 
-    public void addVariationsToProduct(List<ProductManagement.Variation> variations,Product product){
+    public void addVariationsToProduct(List<CreateProduct.Variation> variations, Product product){
         List<ProductVariation> productVariations = variations.stream()
                 .map(element -> {
                     ProductVariation pv = new ProductVariation();
@@ -48,6 +57,25 @@ public class ProductVariationService {
                     return pv;
                 }).toList();
 
+        saveAll(productVariations);
+    }
+
+    public void deleteAllByVariationId(List<Long> variationIds) {
+        List<ProductVariation> variations = productVariationRepository.findAllById(variationIds);
+        variations.forEach(variation -> variation.setDeleted(true));
+        updateAllProductVariation(variations);
+    }
+
+    public void updateProductVariationQuantity(List<UpdateProduct.UpdatedVariation> updatedVariations) {
+        List<ProductVariation> productVariations = findProductVariationsById(
+                updatedVariations.stream()
+                        .map(UpdateProduct.UpdatedVariation::getProductVariationId)
+                        .toList()
+        );
+        productVariations.forEach(variation -> updatedVariations.stream()
+                .filter(update -> update.getProductVariationId().equals(variation.getProductVariationId())) // Corrected filter condition
+                .findFirst()
+                .ifPresent(update -> variation.setQuantity(update.getQuantity())));
         saveAll(productVariations);
     }
 
