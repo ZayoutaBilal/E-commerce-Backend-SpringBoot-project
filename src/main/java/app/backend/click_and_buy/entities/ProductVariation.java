@@ -4,10 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.DialectOverride;
 import org.hibernate.annotations.Where;
-import org.springframework.data.jpa.repository.Query;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,6 +14,7 @@ import java.util.List;
 @Entity
 @Table(name = "product_variations")
 @Where(clause = "deleted = false")
+
 public class ProductVariation {
 
     @Id
@@ -55,6 +53,5 @@ public class ProductVariation {
 
     @OneToMany(mappedBy = "productVariation", cascade = CascadeType.REMOVE)
     private List<CartItem> cartItems;
-
 
 }

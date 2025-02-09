@@ -138,8 +138,9 @@ public class CustomerServiceController {
 
     @PutMapping("products")
     public ResponseEntity<?> updateProduct(@RequestPart("updateProduct") UpdateProduct updateProduct,
-                                           @RequestPart("files") List<MultipartFile> files) {
+                                           @RequestPart(name = "files", required = false) List<MultipartFile> files) {
         try {
+            System.out.println(updateProduct);
             return productService.updateProduct(updateProduct,files)
                    ? ResponseEntity.ok().body(messageSource.getMessage(Success.UPDATE_PRODUCT,null, Locale.getDefault()))
                     : ResponseEntity.status(HttpStatus.NOT_FOUND).body(messageSource.getMessage(Warning.PRODUCT_NOT_EXISTS,null, Locale.getDefault()));

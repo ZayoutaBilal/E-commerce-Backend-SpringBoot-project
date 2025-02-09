@@ -12,7 +12,6 @@ public class CreateProduct {
 
     private String name;
     private Double price;
-    private Double oldPrice;
     private String description;
     private String information;
     private Long category;

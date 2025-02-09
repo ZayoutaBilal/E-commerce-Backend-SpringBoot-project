@@ -7,6 +7,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(callSuper = true)
 public class UpdateProduct extends CreateProduct {
 
     private Long productId;

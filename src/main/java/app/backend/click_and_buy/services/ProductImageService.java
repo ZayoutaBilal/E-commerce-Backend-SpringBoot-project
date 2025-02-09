@@ -60,8 +60,8 @@ public class ProductImageService {
         saveAll(productImages);
     }
 
-    public void deleteAll(List<ProductImage> productImages){
-        productImageRepository.deleteAll(productImages);
+    public void deleteAllById(List<Long> productImages){
+        productImageRepository.deleteAllById(productImages);
     }
 
 

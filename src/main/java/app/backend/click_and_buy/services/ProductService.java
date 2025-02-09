@@ -193,6 +193,7 @@ public class ProductService {
     }
 
 
+    @Transactional
     public boolean updateProduct(UpdateProduct updateProduct, List<MultipartFile> images){
         Product product = findProductById(updateProduct.getProductId());
         if(!Objects.isNull(product)){
@@ -202,14 +203,10 @@ public class ProductService {
             product.setInformation(updateProduct.getInformation());
             product.setDescription(updateProduct.getDescription());
             product.setPrice(updateProduct.getPrice());
-            if(!images.isEmpty()){
+            if(!Objects.isNull(images) && !images.isEmpty()){
                 productImageService.addImagesToProduct(images,product);
             }
-            productImageService.deleteAll(
-                    product.getProductImages().stream()
-                            .filter(image -> updateProduct.getDeletedImages().contains(image.getProductImageId()))
-                            .toList()
-            );
+            productImageService.deleteAllById(updateProduct.getDeletedImages());
             productVariationService.deleteAllByVariationId(updateProduct.getDeletedVariations());
             productVariationService.addVariationsToProduct(updateProduct.getVariations(),product);
             productVariationService.updateProductVariationQuantity(updateProduct.getUpdatedVariations());
