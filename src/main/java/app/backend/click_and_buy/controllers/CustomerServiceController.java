@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @RestController()
-@RequestMapping("/customer-service")
+@RequestMapping("/api/customer-service")
 @Validated
 @Valid
 public class CustomerServiceController {

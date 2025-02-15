@@ -20,35 +20,28 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class WebSecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-   // private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
-   public SecurityFilterChain applicationSecurity(HttpSecurity http) throws Exception {
+    public SecurityFilterChain applicationSecurity(HttpSecurity http) throws Exception {
        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
        http
-               //.cors(AbstractHttpConfigurer::disable)
                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .formLogin(AbstractHttpConfigurer::disable)
-//               .exceptionHandling(exceptionHandling ->
-//                       exceptionHandling.authenticationEntryPoint(customAuthenticationEntryPoint)
-//               )
-                .securityMatcher("/**")
-                .authorizeHttpRequests(registry -> registry
-                        .requestMatchers("/").permitAll()
-                        .requestMatchers("/user/**").permitAll()
-                        .requestMatchers("/swagger-ui/**").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/manager/**").hasRole("MANAGER")
-                        .requestMatchers("/customer-service/**").hasRole("CUSTOMER_SERVICE")
-                        .requestMatchers("/customer/**").hasRole("CUSTOMER")
-                        .requestMatchers("/common/**").hasAnyRole("CUSTOMER","CUSTOMER_SERVICE","MANAGER","ADMIN")
+               .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+               .formLogin(AbstractHttpConfigurer::disable)
+               .securityMatcher("/api/**")
+               .authorizeHttpRequests(registry -> registry
+                        .requestMatchers("/api/user/**").permitAll()
+                        .requestMatchers("/api/swagger-ui/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/customer-service/**").hasRole("CUSTOMER_SERVICE")
+                        .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/common/**").hasAnyRole("CUSTOMER","CUSTOMER_SERVICE","ADMIN")
                        .anyRequest().authenticated()
 
-                );
+               );
 
         return http.build();
-   }
+    }
 
 
 

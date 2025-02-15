@@ -3,42 +3,34 @@ package app.backend.click_and_buy.controllers;
 import app.backend.click_and_buy.massages.Error;
 import app.backend.click_and_buy.massages.Success;
 import app.backend.click_and_buy.massages.Warning;
-import app.backend.click_and_buy.massages.Subject;
 import app.backend.click_and_buy.entities.*;
 import app.backend.click_and_buy.enums.Numbers;
 import app.backend.click_and_buy.request.ModifyItemQuantity;
 import app.backend.click_and_buy.request.ProductRating;
 import app.backend.click_and_buy.request.ProductToCart;
-import app.backend.click_and_buy.request.ProductsCategory;
-import app.backend.click_and_buy.responses.ColorSizeQuantityCombination;
 import app.backend.click_and_buy.responses.ProductCart;
-import app.backend.click_and_buy.responses.ProductDetails;
 import app.backend.click_and_buy.responses.ProductOverview;
 import app.backend.click_and_buy.services.*;
-import app.backend.click_and_buy.statics.Message;
 import io.jsonwebtoken.io.IOException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.*;
-
 import static app.backend.click_and_buy.enums.UserActionType.*;
 import static app.backend.click_and_buy.statics.Builder.buildProductCart;
 import static app.backend.click_and_buy.statics.Builder.buildProductResponseList;
+
 @AllArgsConstructor
 @RestController()
-@RequestMapping("/customer")
+@RequestMapping("/api/customer")
 @Validated
 public class CustomerController {
 
@@ -101,6 +93,8 @@ public class CustomerController {
         List<CartItem> cartItems= new ArrayList<>(cartItemService.findCartItems(cart));
         List<ProductCart> productCarts=new ArrayList<>();
         for(CartItem cartItem:cartItems){
+            if(Objects.isNull(cartItem.getProductVariation()))
+                continue;
             ProductCart productCart = buildProductCart(cartItem,
                     (productImageService.getOneProductImageByProduct(cartItem.getProductVariation().getProduct()).getImage())
             );
@@ -176,21 +170,6 @@ public class CustomerController {
 
 
 
-
-
-//    @PostMapping("track-user-products-review")
-//    public ResponseEntity<?> trackUserBehaviorProductsReview(@RequestParam @Valid @NotNull String action, @RequestParam @Valid @NotNull List<Object> details) {
-//        User user = userService.findById(commonService.getUserIdFromToken(), false);
-//        UserActionType actionType = UserActionType.fromString(action);
-//        if (!actionType.getDetailType().isInstance(details)) {
-//            return ResponseEntity.badRequest().body("Details type does not match expected type for action: " + actionType);
-//        }
-//        userBehaviorService.save(user,actionType,details);
-//        return ResponseEntity.ok().body("Successfully tracked user behavior");
-//    }
-
-
-
     @GetMapping("products/all-for-customer")
     public ResponseEntity<?> showAllForCustomer(@RequestParam Integer page) {
         User user = userService.findById(commonService.getUserIdFromToken(), false);
@@ -220,18 +199,19 @@ public class CustomerController {
         System.out.println(productRating);
             User user = userService.findById(commonService.getUserIdFromToken(), false);
             Product product = productService.findProductById(productRating.getProductId());
-            if(product == null || user == null){
-                return ResponseEntity.badRequest().body(messageSource.getMessage(Warning.FEEDBACK_CANNOT_BE_ADDED,null, Locale.getDefault()));
-            }else {
-                Rating rating = product.getRating();
-                if (rating == null) {
-                    rating = ratingService.save(Rating.builder().product(product).build());
-                }
-                boolean test = ratingService.addUserRating(rating, user, productRating.getRatingValue(),productRating.getComment());
-                if (test) return ResponseEntity.ok().body(messageSource.getMessage(Success.FEEDBACK_ADDED,null, Locale.getDefault()));
-                else return ResponseEntity.internalServerError().body(messageSource.getMessage(Error.FEEDBACK_FAILED,null, Locale.getDefault()));
-            }
-        }
+        return Optional.ofNullable(product)
+                .flatMap(p -> Optional.ofNullable(user)
+                        .map(u -> {
+                            Rating rating = Optional.ofNullable(p.getRating())
+                                    .orElseGet(() -> ratingService.save(Rating.builder().product(p).build()));
+
+                            return ratingService.addUserRating(rating, u, productRating.getRatingValue(), productRating.getComment()) ?
+                                    ResponseEntity.ok().body(messageSource.getMessage(Success.FEEDBACK_ADDED, null, Locale.getDefault())) :
+                                    ResponseEntity.internalServerError().body(messageSource.getMessage(Error.FEEDBACK_FAILED, null, Locale.getDefault()));
+                        }))
+                .orElseGet(() -> ResponseEntity.badRequest().body(messageSource.getMessage(Warning.FEEDBACK_CANNOT_BE_ADDED, null, Locale.getDefault())));
+
+    }
 
 
 

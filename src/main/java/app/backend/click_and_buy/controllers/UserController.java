@@ -43,7 +43,7 @@ import static app.backend.click_and_buy.enums.UserActionType.VIEW;
 import static app.backend.click_and_buy.statics.Builder.buildProductResponseList;
 
 @RestController
-@RequestMapping("/user/")
+@RequestMapping("/api/user/")
 @Validated
 @AllArgsConstructor
 public class UserController {

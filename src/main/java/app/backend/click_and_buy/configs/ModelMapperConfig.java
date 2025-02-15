@@ -19,13 +19,6 @@ public class ModelMapperConfig {
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         modelMapper.registerModule(new RecordModule());
 
-//        modelMapper.addMappings(new PropertyMap<Product, CreateProduct>() {
-//            @Override
-//            protected void configure() {
-//                skip(destination.getCategory());
-//                skip(destination.getDiscount());
-//            }
-//        });
 
         modelMapper.addMappings(new PropertyMap<Product, GetProduct>() {
             @Override
