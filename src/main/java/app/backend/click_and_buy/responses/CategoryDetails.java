@@ -1,6 +1,7 @@
 package app.backend.click_and_buy.responses;
 
 import app.backend.click_and_buy.entities.Category;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ public class CategoryDetails {
     private String name;
     private String description;
     private Object image;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
     private long parentCategoryId;
 

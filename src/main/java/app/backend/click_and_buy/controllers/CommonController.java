@@ -77,11 +77,9 @@ public class CommonController {
     public ResponseEntity<?> updateUserInfos(@RequestBody @Valid CustomerDTO customerInfos){
         User user=userService.findById(commonService.getUserIdFromToken(),false);
         boolean bool=customerService.updateCustomer(user.getCustomer(),customerInfos);
-        if(bool){
-            return ResponseEntity.ok().body(messageSource.getMessage(Success.CUSTOMER_INFOS_UPDATED,null, Locale.getDefault()));
-        }else {
-            return ResponseEntity.internalServerError().body(messageSource.getMessage(Error.CUSTOMER_INFOS_UPDATED_FAILED,null, Locale.getDefault()));
-        }
+        return bool ? ResponseEntity.ok().body(messageSource.getMessage(Success.CUSTOMER_INFOS_UPDATED,null, Locale.getDefault()))
+            : ResponseEntity.internalServerError().body(messageSource.getMessage(Error.CUSTOMER_INFOS_UPDATED_FAILED,null, Locale.getDefault()));
+
     }
 
 

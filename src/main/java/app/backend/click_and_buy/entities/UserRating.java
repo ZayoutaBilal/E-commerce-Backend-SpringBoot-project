@@ -38,6 +38,7 @@ public class UserRating {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    private Boolean isApproved = Boolean.FALSE;
 
     @PrePersist
     protected void onCreate() {

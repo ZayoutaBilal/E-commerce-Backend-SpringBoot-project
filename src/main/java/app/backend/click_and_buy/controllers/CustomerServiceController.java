@@ -13,9 +13,9 @@ import app.backend.click_and_buy.request.DiscountRequest;
 import app.backend.click_and_buy.request.UpdateProduct;
 import app.backend.click_and_buy.responses.CategoryDetails;
 import app.backend.click_and_buy.responses.GetProduct;
-import app.backend.click_and_buy.services.CategoryService;
-import app.backend.click_and_buy.services.DiscountService;
-import app.backend.click_and_buy.services.ProductService;
+import app.backend.click_and_buy.responses.ProductRating;
+import app.backend.click_and_buy.services.*;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
@@ -43,6 +43,8 @@ public class CustomerServiceController {
     private final ProductService productService;
     private final DiscountService discountService;
     private final MessageSource messageSource;
+    private final UserRatingService userRatingService;
+    private final UserService userService;
 
     @GetMapping("categories")
     public ResponseEntity<?> getAllCategories() {
@@ -185,6 +187,52 @@ public class CustomerServiceController {
             return ResponseEntity.ok().body(messageSource.getMessage(Success.DELETE_DISCOUNT,null, Locale.getDefault()));
         }catch (Exception ignored) {
             return ResponseEntity.internalServerError().body(messageSource.getMessage(Error.DELETE_DISCOUNT,null, Locale.getDefault()));
+        }
+    }
+
+    @GetMapping("comments/{productId}")
+    public ResponseEntity<?> getProductComments(@PathVariable long productId, @RequestParam(required = false) Boolean isApproved){
+        try{
+            List<ProductRating> productComments = userRatingService.getProductComments(productId,isApproved);
+            return ResponseEntity.ok().body(productComments);
+        }catch (EntityNotFoundException e) {
+            return ResponseEntity.badRequest().body(messageSource.getMessage(Warning.PRODUCT_NOT_EXISTS,null, Locale.getDefault()));
+        }
+    }
+
+    @DeleteMapping("comments/{userRatingId}")
+    public ResponseEntity<?> deleteUserRating(@PathVariable long userRatingId){
+        userRatingService.deleteUserRating(userRatingId);
+        return ResponseEntity.ok().body("The comment has been deleted successfully");
+    }
+
+    @PutMapping("comments/{userRatingId}/approve")
+    public ResponseEntity<?> approveOnUserRating(@PathVariable long userRatingId){
+        try{
+            userRatingService.approveOnUserRating(userRatingId);
+            return ResponseEntity.ok().body("The comment has been approved successfully");
+        }catch (EntityNotFoundException e) {
+            return ResponseEntity.badRequest().body(messageSource.getMessage("User Rating does not exists",null, Locale.getDefault()));
+        }
+    }
+
+    @PutMapping("customers/{userId}/report")
+    public ResponseEntity<?> reportACustomer(@PathVariable long userId){
+        try{
+            userService.reportOrUnReport(userId,true);
+            return ResponseEntity.ok().body("The customer has been reported successfully");
+        }catch (EntityNotFoundException e) {
+            return ResponseEntity.badRequest().body(messageSource.getMessage("User does not exists",null, Locale.getDefault()));
+        }
+    }
+
+    @PutMapping("customers/{userId}/unReport")
+    public ResponseEntity<?> unReportACustomer(@PathVariable long userId){
+        try{
+            userService.reportOrUnReport(userId,false);
+            return ResponseEntity.ok().body("The customer has been unreported successfully");
+        }catch (EntityNotFoundException e) {
+            return ResponseEntity.badRequest().body(messageSource.getMessage("User does not exists",null, Locale.getDefault()));
         }
     }
 

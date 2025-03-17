@@ -60,14 +60,25 @@ public class User {
     @JoinColumn(name = "customer_id",referencedColumnName = "customer_id")
     private Customer customer;
 
+    private Integer reportedTimes;
+
+    @Transient
+    private Boolean isReported;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        reportedTimes = 0;
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    @PostLoad
+    protected void afterLoad(){
+        isReported = reportedTimes >= 3;
     }
 
 }

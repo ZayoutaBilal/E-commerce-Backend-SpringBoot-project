@@ -5,12 +5,14 @@ import app.backend.click_and_buy.repositories.UserRepository;
 import app.backend.click_and_buy.statics.Constants;
 import app.backend.click_and_buy.statics.ObjectValidator;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.hibernate.Filter;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 
 @AllArgsConstructor
@@ -89,6 +91,13 @@ public class UserService {
 
     public void confirmEmail(User user){
         user.setEmailConfirmed(true);
+        save(user);
+    }
+
+    public void reportOrUnReport(long userId,boolean reporting){
+        User user = userRepository.findByUserId(userId);
+        if(Objects.isNull(user)) throw new EntityNotFoundException("The user does not exists with ID "+userId);
+        user.setReportedTimes(reporting ? user.getReportedTimes()+1 : 0);
         save(user);
     }
 }
