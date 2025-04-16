@@ -32,8 +32,6 @@ public class Message {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String message;
 
-
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

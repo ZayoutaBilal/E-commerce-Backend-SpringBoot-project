@@ -8,6 +8,7 @@ import app.backend.click_and_buy.enums.Roles;
 import app.backend.click_and_buy.massages.Error;
 import app.backend.click_and_buy.repositories.CustomerRepository;
 import app.backend.click_and_buy.request.*;
+import app.backend.click_and_buy.request.UserMessage;
 import app.backend.click_and_buy.responses.*;
 import app.backend.click_and_buy.security.JwtIssuer;
 import app.backend.click_and_buy.services.*;
@@ -197,7 +198,6 @@ public class UserController {
 
     @PostMapping("message/send-message")
     public ResponseEntity<?> sendMessage(@RequestBody @Valid UserMessage message) {
-        System.out.println(message);
         if(messageService.save(message))
             return ResponseEntity.ok().body(messageSource.getMessage(Success.USER_MESSAGE,null, Locale.getDefault()));
         return ResponseEntity.internalServerError().body(messageSource.getMessage(Error.USER_MESSAGE,null, Locale.getDefault()));

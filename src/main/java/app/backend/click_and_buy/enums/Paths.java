@@ -15,6 +15,7 @@ public enum Paths {
     TEMPLATE_CONFIRM_EMAIL("email_confirm_addressEmail.html"),
     TEMPLATE_FORGET_PASSWORD("email_forget_password.html"),
     TEMPLATE_MESSAGE_TO_USER("email_message_to_user.html"),
+    REPLY_TO_MESSAGE("email_reply_to_message.html"),
     TEMPLATES_PATH("classpath:/emailTemplates/html/");
 
     private String resourcePath;

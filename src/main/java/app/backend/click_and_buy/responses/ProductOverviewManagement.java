@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ProductOverviewManagement {
     private long productId;
+    private long countOfComments;
     private String name;
     private double price;
     private double oldPrice;

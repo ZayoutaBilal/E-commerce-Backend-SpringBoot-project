@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reply to Your Message</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #e1e1e1;
+        }
+        .header {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .content {
+            margin-bottom: 15px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #7f8c8d;
+            text-align: center;
+        }
+        .signature {
+            margin-top: 25px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="header">Reply to Your Message</h1>
+
+    <p class="content">Dear <span th:text="${var}">Customer</span>,</p>
+
+    <p class="content">Thank you for reaching out to us. Here's our response to your message:</p>
+
+    <div class="reply-content">
+        <strong>Our reply:</strong>
+        <p th:text="${message}">[Reply content here]</p>
+    </div>
+
+    <p class="content">If you have any further questions, please don't hesitate to contact us.</p>
+
+    <div class="signature">
+        <p>Best regards,</p>
+        <p>The ClickAndBuy Support Team</p>
+    </div>
+</div>
+
+<div class="footer">
+    This email was sent in response to your inquiry. © 2024 ClickAndBuy. All rights reserved.
+</div>
+</body>
+</html>

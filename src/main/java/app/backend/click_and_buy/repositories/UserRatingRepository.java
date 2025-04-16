@@ -16,4 +16,5 @@ public interface UserRatingRepository extends JpaRepository<UserRating, Long> {
 
     List<UserRating> findAllByRating_Product_ProductIdAndIsApproved(long productId,Boolean isApproved);
 
+    long countUserRatingsByRating_RatingIdAndIsApproved(long ratingId, boolean isApproved);
 }

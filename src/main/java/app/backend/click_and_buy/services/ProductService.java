@@ -167,7 +167,7 @@ public class ProductService {
                     else overview.setDiscountPercent(0f);
                 if (!product.getProductImages().isEmpty())
                         overview.setImage(product.getProductImages().get(0).getImage());
-
+            if (!Objects.isNull(product.getRating())) overview.setCountOfComments(userRatingRepository.countUserRatingsByRating_RatingIdAndIsApproved(product.getRating().getRatingId(),false));
             return overview;
         });
     }

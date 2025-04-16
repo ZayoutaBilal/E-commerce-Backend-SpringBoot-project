@@ -1,15 +1,33 @@
 package app.backend.click_and_buy.services;
 
 import app.backend.click_and_buy.entities.Message;
+import app.backend.click_and_buy.enums.Paths;
 import app.backend.click_and_buy.repositories.MessageRepository;
 import app.backend.click_and_buy.request.UserMessage;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.eclipse.angus.mail.util.MailConnectException;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-@AllArgsConstructor
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.util.List;
+
+
 @Service
 public class MessageService {
     private final MessageRepository messageRepository;
+    private final ModelMapper modelMapper;
+    private final MailingService mailingService;
+
+    public MessageService(MessageRepository messageRepository, ModelMapper modelMapper, MailingService mailingService) {
+        this.messageRepository = messageRepository;
+        this.modelMapper = modelMapper;
+        this.mailingService = mailingService;
+    }
 
     public boolean save(UserMessage message) {
         try {
@@ -20,5 +38,29 @@ public class MessageService {
                     .build());
             return true;
         } catch (Exception ignored) {return false;}
+    }
+
+    public Page<app.backend.click_and_buy.responses.UserMessage> getAll(int page, int size) {
+        return messageRepository.findAll(PageRequest.of(page, size))
+                .map(message -> modelMapper.map(message, app.backend.click_and_buy.responses.UserMessage.class));
+    }
+
+    public void sendReply(UserMessage message) {
+        System.out.println("Message from service: " + message);
+        try {
+            mailingService.sendMail(message.getName(), message.getEmail(), message.getMessage(), Paths.REPLY_TO_MESSAGE.getResourcePath(), "Reply to your message");
+        }catch (MailConnectException ignored) {
+            throw new RuntimeException("Error sending reply");
+        }
+    }
+
+    public void markAsRead(long messageId) {
+        messageRepository.findById(messageId).ifPresentOrElse(message -> {
+            message.setRead(true);
+            message.setUpdatedAt(LocalDateTime.now());
+            messageRepository.save(message);
+        }, () -> {
+            throw new EntityNotFoundException("Message with identity " + messageId + " not found");
+        });
     }
 }
