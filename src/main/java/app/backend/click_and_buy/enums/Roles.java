@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 public enum Roles {
 
@@ -18,4 +17,7 @@ public enum Roles {
 
     private List<String> roles;
 
+    Roles(List<String> roles) {
+        this.roles = roles;
+    }
 }

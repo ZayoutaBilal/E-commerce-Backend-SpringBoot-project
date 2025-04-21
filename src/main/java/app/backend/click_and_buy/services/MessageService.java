@@ -41,12 +41,11 @@ public class MessageService {
     }
 
     public Page<app.backend.click_and_buy.responses.UserMessage> getAll(int page, int size) {
-        return messageRepository.findAll(PageRequest.of(page, size))
+        return messageRepository.findAllByIsReadIsFalse(PageRequest.of(page, size))
                 .map(message -> modelMapper.map(message, app.backend.click_and_buy.responses.UserMessage.class));
     }
 
     public void sendReply(UserMessage message) {
-        System.out.println("Message from service: " + message);
         try {
             mailingService.sendMail(message.getName(), message.getEmail(), message.getMessage(), Paths.REPLY_TO_MESSAGE.getResourcePath(), "Reply to your message");
         }catch (MailConnectException ignored) {
@@ -54,13 +53,17 @@ public class MessageService {
         }
     }
 
-    public void markAsRead(long messageId) {
-        messageRepository.findById(messageId).ifPresentOrElse(message -> {
-            message.setRead(true);
+    public void markAsRead(List<Long> ids) {
+        List<Message> messages = messageRepository.findAllById(ids);
+        if (messages.isEmpty()) return;
+        messages.forEach(message -> {
+            message.setIsRead(true);
             message.setUpdatedAt(LocalDateTime.now());
-            messageRepository.save(message);
-        }, () -> {
-            throw new EntityNotFoundException("Message with identity " + messageId + " not found");
         });
+        messageRepository.saveAll(messages);
+    }
+
+    public void deleteMessages(List<Long> ids){
+        messageRepository.deleteAllById(ids);
     }
 }

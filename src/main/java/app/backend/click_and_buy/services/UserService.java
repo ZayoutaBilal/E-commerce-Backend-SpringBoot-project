@@ -10,6 +10,8 @@ import lombok.AllArgsConstructor;
 import org.hibernate.Filter;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
@@ -70,11 +72,11 @@ public class UserService {
         return user;
     }
 
-    public List<User> findAll(boolean includeDeleted) {
+    public Page<User> findAll(int page, int size, boolean isDeleted) {
         Session session = entityManager.unwrap(Session.class);
         Filter filter = session.enableFilter("deletedUserFilter");
-        filter.setParameter("isDeleted", includeDeleted);
-        List<User> products = userRepository.findAll();
+        filter.setParameter("isDeleted", isDeleted);
+        Page<User> products = userRepository.findAll(PageRequest.of(page,size));
         session.disableFilter("deletedUserFilter");
         return products;
     }

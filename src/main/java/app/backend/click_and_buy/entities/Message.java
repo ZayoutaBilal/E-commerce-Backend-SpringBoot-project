@@ -24,7 +24,7 @@ public class Message {
 
     private String name;
 
-    private boolean isRead = false;
+    private Boolean isRead = Boolean.FALSE;
 
     @Column(nullable = false)
     private String email;
