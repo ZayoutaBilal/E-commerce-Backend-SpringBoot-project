@@ -2,6 +2,7 @@ package app.backend.click_and_buy.responses;
 
 import app.backend.click_and_buy.entities.Customer;
 import app.backend.click_and_buy.entities.User;
+import app.backend.click_and_buy.enums.Roles;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
@@ -26,6 +27,7 @@ public class UserInfos {
     private boolean active;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
+    private Roles roles;
 
     public static UserInfos build(User user){
         return UserInfos.builder()
@@ -40,8 +42,9 @@ public class UserInfos {
                 .birthday(user.getCustomer().getBirthday())
                 .username(user.getUsername())
                 .picture(user.getCustomer().getPicture())
-                .active(!user.getDeleted())
+                .active(user.getActive())
                 .createdAt(user.getCreatedAt())
+                .roles(Roles.fromStrings(user.getRoles()))
                 .build();
     }
 }

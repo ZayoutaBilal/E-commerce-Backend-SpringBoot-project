@@ -22,6 +22,7 @@ public class UserDetailsDTO implements UserDetails {
     private Set<GrantedAuthority> authorities;
     private boolean isEnabled;
     private String token;
+    private boolean isActive;
 
 
 
@@ -46,7 +47,7 @@ public class UserDetailsDTO implements UserDetails {
     @JsonIgnore
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return this.isActive;
     }
 
     @JsonIgnore

@@ -24,11 +24,9 @@ public class Customer {
     private Long customerId;
 
     @Size(min = 1, max = 30)
-    @Column(name = "first_name", nullable = false)
     private String firstName;
 
     @Size(min = 1, max = 30)
-    @Column(name = "last_name", nullable = false)
     private String lastName;
 
     @Column(name = "phone", nullable = false)

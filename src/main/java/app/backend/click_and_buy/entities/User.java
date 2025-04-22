@@ -51,6 +51,8 @@ public class User {
     @Column(name = "deleted",nullable = false)
     private Boolean deleted = Boolean.FALSE;
 
+    private Boolean active = Boolean.TRUE;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")

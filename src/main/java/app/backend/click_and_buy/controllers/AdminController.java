@@ -23,6 +23,7 @@ public class AdminController {
     private final CustomerService customerService;
     private final MessageService messageService;
 
+
     public AdminController(UserService userService, CustomerService customerService, MessageService messageService) {
         this.userService = userService;
         this.customerService = customerService;
@@ -58,7 +59,7 @@ public class AdminController {
     @GetMapping("customers-services")
     public ResponseEntity<?> getCustomersServices(@RequestParam(name = "page", defaultValue = "0") int page, @RequestParam(name = "size", defaultValue = "10") int size){
         try {
-            Page<UserInfos> userInfosPage = customerService.get(page, size, Roles.CUSTOMER_SERVICE);
+            Page<UserInfos> userInfosPage = userService.getAllWithPage(page, size, Roles.CUSTOMER_SERVICE);
             return ResponseEntity.ok().body(userInfosPage);
         }catch (RuntimeException exception){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
@@ -68,37 +69,48 @@ public class AdminController {
     @GetMapping("customers")
     public ResponseEntity<?> getCustomers(@RequestParam(name = "page", defaultValue = "0") int page, @RequestParam(name = "size", defaultValue = "10") int size){
         try {
-            Page<UserInfos> userInfosPage = customerService.get(page, size, Roles.CUSTOMER);
+            Page<UserInfos> userInfosPage = userService.getAllWithPage(page, size, Roles.CUSTOMER);
             return ResponseEntity.ok().body(userInfosPage);
         }catch (RuntimeException exception){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
         }
     }
 
-    @PostMapping("add-user")
+    @PostMapping("users/add")
     public ResponseEntity<?> addUser(@RequestBody UserManagement userManagement){
         try {
-            String password = customerService.addCustomerOrCustomerService(userManagement);
+            String password = userService.addUser(userManagement);
             return ResponseEntity.ok().body("User has been added successfully + '"+password+"'");
         }catch (RuntimeException exception){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
         }
     }
 
-    @PostMapping("{userId}/update-user")
-    public ResponseEntity<?> addUser(@PathVariable long userId,@RequestBody UserManagement userManagement){
+    @PostMapping("users/{userId}/update")
+    public ResponseEntity<?> updateUser(@PathVariable long userId,@RequestBody UserManagement userManagement){
         try {
-            customerService.editCustomerOrCustomerService(userId,userManagement);
+            userService.editUser(userId,userManagement);
             return ResponseEntity.ok().body("User has been updated successfully");
+        }catch (RuntimeException exception){
+            System.out.println(exception.fillInStackTrace());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+    }
+
+    @PutMapping("users/{userId}/reset-password")
+    public ResponseEntity<?> resetPassword(@PathVariable long userId){
+        try {
+            return ResponseEntity.ok().body(userService.resetPassword(userId));
         }catch (RuntimeException exception){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
         }
     }
 
-    @PutMapping("{userId}/reset-user-password")
-    public ResponseEntity<?> resetPassword(@PathVariable long userId){
+    @DeleteMapping("users/{userId}")
+    public ResponseEntity<?> deleteUser(@PathVariable long userId){
         try {
-            return ResponseEntity.ok().body(customerService.resetPassword(userId));
+            userService.deleteUser(userId);
+            return ResponseEntity.ok().body("User has been deleted successfully");
         }catch (RuntimeException exception){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
         }

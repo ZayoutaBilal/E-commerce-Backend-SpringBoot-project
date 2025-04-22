@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
 import java.util.List;
 
 @Getter
@@ -19,5 +20,18 @@ public enum Roles {
 
     Roles(List<String> roles) {
         this.roles = roles;
+    }
+
+    public static Roles fromStrings(List<String> roleStrings) {
+        if (roleStrings == null || roleStrings.isEmpty()) {
+            return null;
+        }
+        for (Roles role : Roles.values()) {
+            if (new HashSet<>(role.getRoles()).containsAll(roleStrings)) {
+                return role;
+            }
+        }
+
+        throw new IllegalArgumentException("No matching Roles enum for: " + roleStrings);
     }
 }

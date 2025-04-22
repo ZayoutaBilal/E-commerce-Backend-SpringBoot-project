@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -32,10 +33,6 @@ public class CustomerService {
 
 
     private final CustomerRepository customerRepository;
-    private final UserService userService;
-    private final UserRepository userRepository;
-    private final Argon2PasswordEncoder argon2PasswordEncoder;
-    private  final CartRepository cartRepository;
 
     public Customer save(Customer customer) throws SQLException {
         return customerRepository.save(customer);
@@ -84,66 +81,6 @@ public class CustomerService {
         }
     }
 
-    public Page<UserInfos> get(int page, int size, Roles roles){
-        Page<User> users = userRepository.findByAllRoles(roles.getRoles(), roles.getRoles().size(), PageRequest.of(page,size));
-        return users.map(UserInfos::build);
-    }
-
-    public void deleteCustomer(long id){
-        User user = userRepository.findByUserId(id);
-        if (Objects.nonNull(user)) userService.remove(user);
-        else throw new EntityNotFoundException(String.format("User with identity %s not found",id));
-    }
-
-    public void editCustomerOrCustomerService(long id,UserManagement userManagement){
-        if(userRepository.existsByUsernameOrEmail(userManagement.getUsername(), userManagement.getEmail())){
-            throw new EntityExistsException(String.format("User with username %s or email %s already exists",userManagement.getUsername(),userManagement.getEmail()));
-        }
-        User user = userRepository.findByUserId(id);
-        if (Objects.nonNull(user)){
-            user.setDeleted(!userManagement.isActive());
-            user.setEmail(userManagement.getEmail());
-            user.setUsername(userManagement.getUsername());
-            user.setEmailConfirmed(userManagement.getRoles().equals(Roles.CUSTOMER_SERVICE));
-            user.setRoles(userManagement.getRoles().getRoles());
-            userRepository.save(user);
-            return;
-        }
-        throw new EntityNotFoundException(String.format("User with identity %s not found",id));
-    }
-
-    public String addCustomerOrCustomerService(UserManagement userManagement){
-        if(userRepository.existsByUsernameOrEmail(userManagement.getUsername(), userManagement.getEmail())){
-            throw new EntityExistsException(String.format("User with username %s or email %s already exists",userManagement.getUsername(),userManagement.getEmail()));
-        }
-        String password = VerificationCodeGenerator.generatePassword();
-        User user = new User();
-        user.setDeleted(!userManagement.isActive());
-        user.setEmail(userManagement.getEmail());
-        user.setUsername(userManagement.getUsername());
-        user.setEmailConfirmed(userManagement.getRoles().equals(Roles.CUSTOMER_SERVICE));
-        user.setRoles(userManagement.getRoles().getRoles());
-        user.setPassword(argon2PasswordEncoder.encode(password));
-        try {
-            Customer customer = Customer.builder().phone(userManagement.getPhone()).build();
-            user.setCustomer(customer);
-            userService.save(user);
-            cartRepository.save(Cart.builder().customer(customer).build());
-            return password;
-        } catch (RuntimeException e) {
-            throw  new RuntimeException(e.getMessage());
-        }
-    }
-
-    public String resetPassword(long id){
-        User user = userRepository.findByUserId(id);
-        if (Objects.nonNull(user)){
-            String password = VerificationCodeGenerator.generatePassword();
-            user.setPassword(argon2PasswordEncoder.encode(password));
-            return password;
-        }
-        throw new EntityNotFoundException(String.format("User with identity %s not found",id));
-    }
 
 
 

@@ -24,7 +24,7 @@ public class Message {
 
     private String name;
 
-    private Boolean isRead = Boolean.FALSE;
+    private Boolean isRead;
 
     @Column(nullable = false)
     private String email;
@@ -40,7 +40,8 @@ public class Message {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
+        this.isRead = false;
     }
 
     @PreUpdate
