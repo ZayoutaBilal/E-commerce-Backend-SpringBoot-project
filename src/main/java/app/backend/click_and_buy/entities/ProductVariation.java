@@ -28,8 +28,8 @@ public class ProductVariation {
 
     private Integer quantity;
 
-    @Column(columnDefinition = "DEFAULT false")
-    private boolean deleted ;
+    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean deleted;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
