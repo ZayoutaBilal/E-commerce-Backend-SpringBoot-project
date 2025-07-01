@@ -66,6 +66,16 @@ public class AdminController {
         }
     }
 
+    @GetMapping("admins")
+    public ResponseEntity<?> getAdmins(@RequestParam(name = "page", defaultValue = "0") int page, @RequestParam(name = "size", defaultValue = "10") int size){
+        try {
+            Page<UserInfos> userInfosPage = userService.getAllWithPage(page, size, Roles.ADMIN);
+            return ResponseEntity.ok().body(userInfosPage);
+        }catch (RuntimeException exception){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
+        }
+    }
+
     @GetMapping("customers")
     public ResponseEntity<?> getCustomers(@RequestParam(name = "page", defaultValue = "0") int page, @RequestParam(name = "size", defaultValue = "10") int size){
         try {
@@ -92,7 +102,6 @@ public class AdminController {
             userService.editUser(userId,userManagement);
             return ResponseEntity.ok().body("User has been updated successfully");
         }catch (RuntimeException exception){
-            System.out.println(exception.fillInStackTrace());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getMessage());
         }
     }

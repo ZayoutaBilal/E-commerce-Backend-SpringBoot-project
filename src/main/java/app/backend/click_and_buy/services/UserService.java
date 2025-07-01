@@ -22,7 +22,9 @@ import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -119,6 +121,7 @@ public class UserService {
         else throw new EntityNotFoundException(String.format("User with identity %s not found",id));
     }
 
+    @Transactional
     public void editUser(long id, UserManagement userManagement){
         if(userRepository.existsByUsernameOrEmailExcludingUserId(userManagement.getUsername(), userManagement.getEmail(), id)){
             throw new EntityExistsException(String.format("User with username %s or email %s already exists",userManagement.getUsername(),userManagement.getEmail()));
@@ -130,8 +133,8 @@ public class UserService {
                 user.setActive(userManagement.isActive());
                 user.setEmail(userManagement.getEmail());
                 user.setUsername(userManagement.getUsername());
-                //user.setRoles(userManagement.getRoles().getRoles());
-                save(user);
+                user.getRoles().clear();
+                user.getRoles().addAll(userManagement.getRoles().getRoles());
                 return;
             }
         }catch (RuntimeException runtimeException){
